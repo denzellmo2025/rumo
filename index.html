@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1A2B" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Monte sua viagem em 1 minuto: quiz, pacotes, orçamento, cofre, roteiro e mala.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rumo">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Rumo Viagem</title>
+<style>html{padding-top:env(safe-area-inset-top,0px);color-scheme:light}[hidden]{display:none!important}img{max-width:100%}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap">
+<style>
+/* Layout: estilo app de reservas — barra superior com "pílula" da viagem, abas no topo no desktop e barra inferior no celular; cards grandes com ilustrações animadas de praia. Paleta "meio-dia na praia" (claro) e "pôr do sol" (escuro). */
+:root{
+  --bg:#FFFFFF; --bg2:#F2FAFB; --card:#FFFFFF; --ink:#13213C; --muted:#5E6B7C; --line:#E4EBEF;
+  --ocean:#00A3B5; --ocean-d:#007E8E; --ocean-soft:#DDF5F7; --coral:#FF6450; --coral-d:#E84A36; --coral-soft:#FFE7E2; --sun:#FFBE2E; --sun-soft:#FFF3D3; --mint:#21B07A; --mint-soft:#DDF6EC; --grape:#7C5CFF;
+  --sky1:#62CDF0; --sky2:#D5F4FB; --sea1:#35C6D6; --sea2:#14A6BF; --sea3:#0B83A2; --sand:#FBE1B2; --sand2:#F4CF8E; --hill1:#3BB273; --hill2:#2A9461; --cloud:#FFFFFF; --sunc:#FFC93C;
+  --shadow:0 8px 28px rgba(19,33,60,.08); --shadow-h:0 14px 36px rgba(19,33,60,.14);
+  --f-d:"Fredoka","Trebuchet MS",system-ui,sans-serif; --f-b:"Nunito Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1A2B; --bg2:#13243A; --card:#152A42; --ink:#EEF5F8; --muted:#A3B4C4; --line:#24405C;
+  --ocean:#33D3E3; --ocean-d:#1FB7C8; --ocean-soft:#14394A; --coral:#FF7A66; --coral-d:#FF8E7C; --coral-soft:#43242A; --sun:#FFC94D; --sun-soft:#3E331A; --mint:#45D49A; --mint-soft:#163C30; --grape:#9C85FF;
+  --sky1:#2A2F6B; --sky2:#FF9A76; --sea1:#2B6E9C; --sea2:#1E557F; --sea3:#163F63; --sand:#C79A6B; --sand2:#B0855A; --hill1:#2D6B5A; --hill2:#22564A; --cloud:#FFD6C4; --sunc:#FFB45E;
+  --shadow:0 8px 28px rgba(0,0,0,.35); --shadow-h:0 14px 36px rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1A2B; --bg2:#13243A; --card:#152A42; --ink:#EEF5F8; --muted:#A3B4C4; --line:#24405C;
+  --ocean:#33D3E3; --ocean-d:#1FB7C8; --ocean-soft:#14394A; --coral:#FF7A66; --coral-d:#FF8E7C; --coral-soft:#43242A; --sun:#FFC94D; --sun-soft:#3E331A; --mint:#45D49A; --mint-soft:#163C30; --grape:#9C85FF;
+  --sky1:#2A2F6B; --sky2:#FF9A76; --sea1:#2B6E9C; --sea2:#1E557F; --sea3:#163F63; --sand:#C79A6B; --sand2:#B0855A; --hill1:#2D6B5A; --hill2:#22564A; --cloud:#FFD6C4; --sunc:#FFB45E;
+  --shadow:0 8px 28px rgba(0,0,0,.35); --shadow-h:0 14px 36px rgba(0,0,0,.5); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-b);font-size:15px;line-height:1.5;margin:0;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+h1,h2,h3,.disp{font-family:var(--f-d);text-wrap:balance;margin:0;line-height:1.1;font-weight:600}
+h2{font-size:1.6rem}h3{font-size:1.15rem}
+p{margin:0}a{color:var(--ocean-d)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px;border-radius:8px}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}.small{font-size:.86rem}.tiny{font-size:.76rem}
+.ic{flex:none;display:block}
+
+/* topo */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px;display:flex;align-items:center;gap:14px;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:7px;font-family:var(--f-d);font-weight:700;font-size:1.45rem;color:var(--coral);text-decoration:none;flex:none}
+.logo .sunlogo{animation:spin 18s linear infinite}
+.topnav{display:none;gap:4px}
+.topnav button{border:0;background:none;padding:8px 14px;border-radius:999px;font-weight:700;color:var(--muted);cursor:pointer}
+.topnav button[aria-current="page"]{color:var(--ink);background:var(--bg2)}
+.pill{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 6px 6px 14px;box-shadow:var(--shadow);cursor:pointer;min-width:0;max-width:100%}
+.pill:hover{box-shadow:var(--shadow-h)}
+.pill .t{display:flex;flex-direction:column;line-height:1.15;min-width:0;text-align:left}
+.pill b{font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill span.s{font-size:.75rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill .go{width:34px;height:34px;border-radius:50%;background:var(--coral);color:#fff;display:grid;place-items:center;flex:none}
+#instalar{border:0;background:var(--sun);color:#3A2600;font-weight:800;border-radius:999px;padding:7px 12px;cursor:pointer;font-size:.82rem}
+.offline{font-size:.72rem;font-weight:800;color:var(--coral)}
+
+/* barra inferior */
+.bottom{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.bottom-in{display:grid;grid-template-columns:repeat(5,1fr);max-width:560px;margin:0 auto}
+.bottom button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px 9px;font-size:.7rem;font-weight:700;color:var(--muted);cursor:pointer}
+.bottom button[aria-current="page"]{color:var(--coral)}
+.bottom button[aria-current="page"] .ic{transform:translateY(-1px) scale(1.08)}
+@media (min-width:900px){.topnav{display:flex}.bottom{display:none}main{padding-bottom:60px!important}}
+
+main{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 110px;display:flex;flex-direction:column;gap:26px}
+.sec{display:flex;flex-direction:column;gap:14px}
+.sec-h{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.sec-h p{max-width:60ch}
+.kicker{font-size:.74rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--coral)}
+
+/* cards e botões */
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px;min-width:0}
+.card.soft{background:var(--bg2);box-shadow:none;border-color:transparent}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}
+.btn{border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:11px 16px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;color:var(--ink);transition:transform .15s,box-shadow .15s,border-color .15s}
+.btn:hover{border-color:var(--ink)}
+.btn:active{transform:scale(.97)}
+.btn.cta{background:linear-gradient(135deg,var(--coral),#FF8A3D);border:0;color:#fff;box-shadow:0 8px 20px color-mix(in srgb,var(--coral) 35%,transparent)}
+.btn.cta:hover{box-shadow:0 12px 26px color-mix(in srgb,var(--coral) 45%,transparent)}
+.btn.sea{background:var(--ocean);border-color:var(--ocean);color:#fff}
+.btn.sm{padding:7px 12px;font-size:.84rem;border-radius:11px}
+.btn.ghost{border-color:transparent;background:none;color:var(--muted)}
+.btn.block{width:100%}
+.chip.wrap{white-space:normal}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:.76rem;font-weight:800;background:var(--bg2);color:var(--ink);white-space:nowrap}
+.chip.sun{background:var(--sun-soft)}.chip.coral{background:var(--coral-soft);color:var(--coral-d)}.chip.mint{background:var(--mint-soft);color:var(--mint)}.chip.sea{background:var(--ocean-soft);color:var(--ocean-d)}
+.est{font-size:.66rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--sun);background:var(--sun-soft);padding:1px 6px;border-radius:6px;vertical-align:middle}
+
+/* hero */
+.hero{position:relative;border-radius:28px;overflow:hidden;box-shadow:var(--shadow);min-height:330px;display:flex}
+.hero svg.scene{position:absolute;inset:0;width:100%;height:100%}
+.hero-c{position:relative;padding:24px;display:flex;flex-direction:column;gap:12px;justify-content:space-between;width:100%}
+.hero h1{font-size:clamp(2.2rem,7vw,3.6rem);font-weight:700;letter-spacing:-.01em;color:var(--ink)}
+.hero .lead{max-width:34ch;font-weight:600;color:var(--ink)}
+.count{display:inline-flex;align-items:baseline;gap:6px;background:color-mix(in srgb,var(--card) 82%,transparent);backdrop-filter:blur(6px);padding:8px 14px;border-radius:16px;font-weight:800;align-self:flex-start}
+.count b{font-family:var(--f-d);font-size:1.7rem;color:var(--coral);line-height:1}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+.glass{background:color-mix(in srgb,var(--card) 86%,transparent);backdrop-filter:blur(8px);border:0}
+
+/* categorias */
+.cats{display:flex;gap:22px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;border-bottom:1px solid var(--line)}
+.cats::-webkit-scrollbar{display:none}
+.cat{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:5px;padding:4px 2px 10px;color:var(--muted);font-weight:700;font-size:.8rem;cursor:pointer;border-bottom:2.5px solid transparent;flex:none}
+.cat[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.cat:hover{color:var(--ink)}
+
+/* pacotes */
+.pkgs{display:grid;gap:24px 18px;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr))}
+.pkg{cursor:pointer;display:flex;flex-direction:column;gap:8px;border:0;background:none;text-align:left;padding:0}
+.thumb{position:relative;aspect-ratio:4/3;border-radius:20px;overflow:hidden;max-width:100%;box-shadow:var(--shadow);transition:transform .25s,box-shadow .25s}
+.pkg:hover .thumb{transform:translateY(-3px);box-shadow:var(--shadow-h)}
+.thumb svg.scene{width:100%;height:100%;display:block}
+.fav{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#13213C;display:grid;place-items:center;cursor:pointer}
+.fav[aria-pressed="true"]{color:#FF4D5E}
+.fav[aria-pressed="true"] svg{fill:#FF4D5E;animation:pop .35s}
+.badge{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.94);color:#13213C;font-weight:800;font-size:.74rem;padding:5px 10px;border-radius:999px}
+.pkg h3{font-size:1.08rem}
+.price b{font-size:1.02rem}
+
+/* destinos rolantes */
+.hscroll{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(220px,1fr);gap:14px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.dcard{border:0;padding:0;background:var(--card);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);text-align:left;cursor:pointer;display:flex;flex-direction:column;border:2px solid transparent}
+.dcard[aria-pressed="true"]{border-color:var(--coral)}
+.dcard .thumb{border-radius:0;box-shadow:none;aspect-ratio:16/9}
+.dcard .in{padding:12px 14px 14px;display:flex;flex-direction:column;gap:3px}
+
+/* segmentado */
+.seg2{display:inline-flex;background:var(--bg2);border-radius:999px;padding:4px;gap:2px;overflow-x:auto;max-width:100%;scrollbar-width:none}
+.seg2 button{border:0;background:none;border-radius:999px;padding:8px 14px;font-weight:800;font-size:.86rem;color:var(--muted);cursor:pointer;white-space:nowrap}
+.seg2 button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+
+/* níveis */
+.tiers{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}
+.tier{padding:0;overflow:hidden;gap:0}
+.tier .band{padding:16px 18px;display:flex;justify-content:space-between;align-items:center;color:#13213C}
+.tier.t0 .band{background:linear-gradient(120deg,#FFE29A,#FFC94D)}
+.tier.t1 .band{background:linear-gradient(120deg,#8FE9F2,#3CCAD8)}
+.tier.t2 .band{background:linear-gradient(120deg,#FFB3A6,#FF7A66)}
+.tier .band .nick{font-family:var(--f-d);font-size:1.25rem;font-weight:700}
+.tier .band .lvl{font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
+.tier .bico{width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.55);display:grid;place-items:center}
+.tier .body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px}
+.tier .total{font-family:var(--f-d);font-size:2.2rem;font-weight:700;line-height:1}
+.tier.sel{outline:3px solid var(--coral);outline-offset:-3px}
+.lines{display:flex;flex-direction:column;font-size:.88rem}
+.line{display:grid;grid-template-columns:1fr auto;gap:8px;padding:8px 0;border-top:1px dashed var(--line)}
+.line small{display:block;color:var(--muted);font-size:.77rem}
+.sbar{display:flex;height:10px;border-radius:999px;overflow:hidden;background:var(--bg2)}
+.sbar i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:10px;height:10px;border-radius:4px}
+details.more summary{cursor:pointer;font-weight:800;font-size:.86rem;color:var(--ocean-d);list-style:none}
+details.more summary::-webkit-details-marker{display:none}
+
+/* tabela */
+.tbl{overflow-x:auto;border-radius:18px;border:1px solid var(--line);background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:540px;font-size:.9rem}
+th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);background:var(--bg2)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tr.cur td{background:var(--ocean-soft)}tr:last-child td{border-bottom:0}
+
+/* checks */
+.chk{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line);cursor:pointer}
+.chk:first-child{border-top:0}
+.chk input{appearance:none;-webkit-appearance:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;margin:0;display:grid;place-items:center;cursor:pointer;transition:background .15s,border-color .15s}
+.chk input:checked{background:var(--mint);border-color:var(--mint);animation:pop .3s}
+.chk input:checked::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.chk.done span.tx{text-decoration:line-through;color:var(--muted)}
+.ring{--p:0;width:46px;height:46px;border-radius:50%;background:conic-gradient(var(--mint) calc(var(--p)*1%),var(--bg2) 0);display:grid;place-items:center;flex:none}
+.ring span{width:36px;height:36px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:.72rem;font-weight:800}
+
+/* switch */
+.sw{display:flex;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line);cursor:pointer}
+.sw:first-of-type{border-top:0}
+.sw input{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-radius:999px;background:var(--line);position:relative;flex:none;cursor:pointer;transition:background .2s;margin:0}
+.sw input::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.sw input:checked{background:var(--mint)}.sw input:checked::after{transform:translateX(18px)}
+.save{font-weight:800;color:var(--mint);white-space:nowrap}
+
+/* roteiro */
+.days{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:none}
+.days::-webkit-scrollbar{display:none}
+.dchip{flex:none;width:60px;border:1.5px solid var(--line);background:var(--card);border-radius:18px;padding:8px 0;display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative}
+.dchip .w{font-size:.68rem;font-weight:800;text-transform:uppercase;color:var(--muted)}
+.dchip .d{font-family:var(--f-d);font-size:1.35rem;font-weight:700;line-height:1.1}
+.dchip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.dchip[aria-pressed="true"] .w{color:inherit;opacity:.8}
+.dchip .dot{position:absolute;bottom:5px;width:5px;height:5px;border-radius:50%;background:var(--coral)}
+.tl{display:flex;flex-direction:column}
+.tli{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:start;position:relative;padding-bottom:16px}
+.tli:not(:last-child)::before{content:"";position:absolute;left:21px;top:44px;bottom:0;width:2px;background:var(--line)}
+.tico{width:44px;height:44px;border-radius:15px;display:grid;place-items:center}
+.tag-viagem{background:var(--ocean-soft);color:var(--ocean-d)}.tag-praia{background:var(--sun-soft);color:#B07800}.tag-passeio{background:var(--coral-soft);color:var(--coral-d)}.tag-noite{background:#ECE7FF;color:var(--grape)}.tag-base{background:var(--mint-soft);color:var(--mint)}.tag-livre,.tag-custom{background:var(--bg2);color:var(--muted)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tag-noite{background:#2A2550}:root:not([data-theme="light"]) .tag-praia{color:var(--sun)}}
+:root[data-theme="dark"] .tag-noite{background:#2A2550}:root[data-theme="dark"] .tag-praia{color:var(--sun)}
+.tli .h{font-size:.8rem;font-weight:800;color:var(--muted)}
+.tli .t{font-weight:700}
+.tli.done .t{text-decoration:line-through;color:var(--muted)}
+.tli .chk{border:0;padding:6px 0 0}
+
+/* cofre */
+.jarwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.jar{width:150px;flex:none}
+.jar .water{transition:transform 1.2s cubic-bezier(.2,.8,.2,1)}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1;min-width:220px}
+.kpi b{display:block;font-family:var(--f-d);font-size:1.5rem;font-weight:700;line-height:1.15}
+.kpi span{font-size:.78rem;color:var(--muted);font-weight:700}
+.bar{height:9px;border-radius:999px;background:var(--bg2);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:999px;background:var(--ocean);transition:width .6s}
+.bar.over i{background:var(--coral)}
+
+/* formulários */
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:800;font-size:.84rem;min-width:0}
+input[type=text],input[type=number],input[type=date],select{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:14px;background:var(--card);min-width:0}
+input:focus,select:focus{border-color:var(--ocean);outline:none}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opts label{cursor:pointer;position:relative}
+.opts input{position:absolute;opacity:0;pointer-events:none}
+.opts span{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;border:1.5px solid var(--line);border-radius:999px;font-weight:800;font-size:.88rem;background:var(--card)}
+.opts input:checked+span{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.opts input:focus-visible+span{outline:3px solid var(--sun)}
+.person{display:grid;grid-template-columns:1fr 84px auto;gap:8px;align-items:end}
+.stepper{display:inline-flex;align-items:center;gap:8px}
+.stepper button{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);background:var(--card);cursor:pointer;font-weight:800;display:grid;place-items:center}
+.stepper button:hover{border-color:var(--ink)}
+.stepper span{min-width:20px;text-align:center;font-weight:800}
+.act{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.act:first-child{border-top:0}
+.note{border-radius:18px;padding:14px 16px;background:var(--sun-soft);font-size:.92rem;display:flex;gap:12px;align-items:flex-start}
+.note.sea{background:var(--ocean-soft)}.note.coral{background:var(--coral-soft)}
+.emerg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.emerg div{background:var(--bg2);border-radius:16px;padding:14px}
+.emerg b{display:block;font-family:var(--f-d);font-size:2rem;color:var(--coral);line-height:1;user-select:all}
+ul.cl,ol.cl{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+
+.nstrip{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:3px;height:14px}
+.nstrip i{border-radius:4px;display:block}
+.nchips{display:flex;gap:6px;flex-wrap:wrap}
+.nchip{border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:6px 10px;font-weight:800;font-size:.8rem;display:inline-flex;gap:5px;align-items:center;cursor:pointer;color:var(--ink)}
+.nchip:hover{border-color:var(--ink)}
+.nchip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+/* quiz e folhas */
+.overlay{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;overflow-y:auto;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.quiz{background:linear-gradient(180deg,color-mix(in srgb,var(--sky1) 32%,var(--bg)),var(--bg) 60%)}
+.q-top{position:sticky;top:0;display:flex;align-items:center;gap:12px;padding:14px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));max-width:640px;width:100%;margin:0 auto}
+.xbtn{width:40px;height:40px;border-radius:50%;border:0;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center;cursor:pointer;flex:none}
+.track{flex:1;height:10px;border-radius:999px;background:color-mix(in srgb,var(--card) 70%,transparent);position:relative}
+.track i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,var(--ocean),var(--coral));transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.track .boat{position:absolute;top:-17px;transition:left .45s cubic-bezier(.2,.8,.2,1);color:var(--coral)}
+.q-body{max-width:640px;width:100%;margin:0 auto;padding:8px max(16px,env(safe-area-inset-right,0px)) 30px max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:18px}
+.q-anim{animation:qin .45s cubic-bezier(.2,.8,.2,1)}
+.q-step{font-weight:800;font-size:.8rem;color:var(--coral);letter-spacing:.06em;text-transform:uppercase}
+.q-body h1{font-size:clamp(1.8rem,6vw,2.5rem);font-weight:700}
+.q-opts{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
+.qo{border:2px solid transparent;background:var(--card);border-radius:20px;padding:14px;display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:center;text-align:left;cursor:pointer;box-shadow:var(--shadow);transition:transform .15s,border-color .15s,box-shadow .15s}
+.qo:hover{transform:translateY(-2px);box-shadow:var(--shadow-h)}
+.qo[aria-pressed="true"]{border-color:var(--coral)}
+.qo .qi{width:52px;height:52px;border-radius:16px;display:grid;place-items:center}
+.qo b{display:block;font-size:1rem;color:var(--ink)}
+.qo span{font-size:.84rem;color:var(--muted)}
+.qo.pic{grid-template-columns:1fr;padding:0;overflow:hidden}
+.qo.pic .thumb{border-radius:0;box-shadow:none;aspect-ratio:16/8}
+.qo.pic .in{padding:10px 14px 14px}
+.slider{width:100%;accent-color:var(--coral);height:30px}
+.money{font-family:var(--f-d);font-size:3rem;font-weight:700;color:var(--coral);line-height:1}
+.q-foot{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.linkbtn{border:0;background:none;color:var(--ocean-d);font-weight:800;cursor:pointer;padding:6px 0;text-decoration:underline;text-underline-offset:3px}
+.res-hero{position:relative;border-radius:26px;overflow:hidden;aspect-ratio:16/10;max-width:100%;box-shadow:var(--shadow-h)}
+.res-hero svg{width:100%;height:100%;display:block}
+.res-hero .tag{position:absolute;left:14px;bottom:14px;right:14px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.sheet-bg{position:fixed;inset:0;background:rgba(10,20,35,.45);z-index:49;animation:fade .25s}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;max-height:92vh;overflow-y:auto;background:var(--bg);border-radius:26px 26px 0 0;padding:0 0 calc(20px + env(safe-area-inset-bottom,0px));animation:up .35s cubic-bezier(.2,.8,.2,1);max-width:640px;margin:0 auto}
+.sheet .grab{width:44px;height:5px;border-radius:9px;background:var(--line);margin:10px auto}
+.sheet .in{padding:6px max(18px,env(safe-area-inset-right,0px)) 0 max(18px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px}
+.toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:800;font-size:.9rem;z-index:60;animation:up .3s;white-space:nowrap}
+#confete{position:fixed;inset:0;pointer-events:none;z-index:70}
+
+/* animações */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes qin{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes up{from{transform:translate(var(--tx,0),40px);opacity:0}to{transform:translate(var(--tx,0),0);opacity:1}}
+.toast{--tx:-50%}
+@keyframes fade{from{opacity:0}}
+@keyframes wave{to{transform:translateX(-200px)}}
+@keyframes drift{0%{transform:translateX(0)}50%{transform:translateX(34px)}100%{transform:translateX(0)}}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-4px) rotate(2deg)}}
+@keyframes glow{0%,100%{transform:scale(1);opacity:.35}50%{transform:scale(1.15);opacity:.2}}
+@keyframes jet{0%{transform:translateX(-60px)}100%{transform:translateX(440px)}}
+@keyframes sway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(3deg)}}
+.scene .w1{animation:wave 11s linear infinite}.scene .w2{animation:wave 8s linear infinite reverse}.scene .w3{animation:wave 6s linear infinite}
+.scene .cl{animation:drift 14s ease-in-out infinite}.scene .cl2{animation:drift 19s ease-in-out infinite reverse}
+.scene .bob{animation:bob 3.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.scene .glow{animation:glow 4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.scene .jet{animation:jet 12s linear infinite}
+.scene .sway{animation:sway 5s ease-in-out infinite;transform-box:fill-box;transform-origin:bottom center}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <a class="logo" href="#explorar" data-go="explorar" aria-label="Rumo, início">
+      <svg class="sunlogo" width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><g fill="var(--sun)"><circle cx="15" cy="15" r="6.5"/><g stroke="var(--sun)" stroke-width="2.6" stroke-linecap="round"><path d="M15 2v3.5M15 24.5V28M2 15h3.5M24.5 15H28M5.8 5.8l2.5 2.5M21.7 21.7l2.5 2.5M5.8 24.2l2.5-2.5M21.7 8.3l2.5-2.5"/></g></g></svg>
+      rumo
+    </a>
+    <nav class="topnav" id="topnav" aria-label="Seções"></nav>
+    <div class="row" style="gap:8px;flex-wrap:nowrap;min-width:0">
+      <span class="offline" id="offline" hidden>Sem internet</span>
+      <button id="instalar" hidden>Instalar</button>
+      <button class="xbtn" id="tema" data-act="tema" style="width:38px;height:38px;box-shadow:none;border:1px solid var(--line)"></button>
+      <button class="pill" id="pill" data-go="ajustes" aria-label="Editar a viagem"></button>
+    </div>
+  </div>
+</header>
+<main id="view"></main>
+<nav class="bottom" aria-label="Seções"><div class="bottom-in" id="bottomnav"></div></nav>
+<canvas id="confete" hidden></canvas>
+<script>
+const IS_PWA=true;
+/* ===================== DADOS ===================== */
+const TIERS=['economico','intermediario','premium'];
+const TN={economico:'Básico econômico',intermediario:'Intermediário',premium:'Premium'};
+const TIPOS={aventura:'Aventura',romantica:'Romântica',familia:'Família',amigos:'Amigos / festa',relax:'Descanso'};
+const HOSPN={hotel:['Pousada simples','Pousada ou hotel 3★','Hotel 4–5★ ou pousada de charme'],airbnb:['Studio ou kitnet (Airbnb)','Apartamento inteiro (Airbnb)','Casa com vista (Airbnb)'],camping:['Camping simples','Camping com estrutura','Glamping (barraca montada com cama)'],gratis:['Camping grátis','Camping grátis','Camping grátis'],casa:['Casa de amigo ou parente','Casa de amigo ou parente','Casa de amigo ou parente']};
+const HOSPT={hotel:'Hotel / pousada',airbnb:'Airbnb',camping:'Camping',gratis:'Camping grátis',casa:'Casa de amigo ou parente'};
+const HOSPL={hotel:'hotel ou pousada',airbnb:'Airbnb',camping:'camping',gratis:'camping grátis',casa:'casa de amigo ou parente'};
+const CARONA=[65/300,82.5/300,100/300];
+const TRN={carro:'Carro próprio',onibus:'Ônibus',carona:'Carona (BlaBlaCar)'};
+const CAT={transporte:'Transporte',hosp:'Hospedagem',comida:'Alimentação',passeios:'Passeios',extras:'Extras e reserva'};
+const CATC={transporte:'var(--sea)',hosp:'var(--sun)',comida:'var(--ok)',passeios:'var(--coral)',extras:'var(--muted)'};
+
+const DEST={
+floripa:{nome:'Florianópolis (SC)',curto:'Floripa',resumo:'Ilha com mais de 40 praias, trilhas, lagoa e a maior oferta de jet ski do Sul.',clima:'Janeiro: 26 °C a 32 °C, água perto de 24 °C e vento nordeste à tarde',km:300,tempoCarro:'4h30 a 5h pela BR-376 e BR-101',ped:20,bus:130,tempoBus:'cerca de 5h, da Rodoviária de Curitiba ao Terminal Rita Maria',hotel:[300,550,1200],airbnb:[330,620,1400],camp:[55,80],glamp:450,food:[90,190,380],taxaDia:0,busca:'Florianópolis, SC',
+ zonas:[
+  {n:'Norte da ilha',b:'Canasvieiras, Jurerê, Ponta das Canas',p:'Mar calmo e quente, base dos passeios de jet ski. Bom para família e casal.',c:'Trânsito pesado em janeiro e preços altos em Jurerê.',q:'Canasvieiras Florianópolis'},
+  {n:'Leste',b:'Lagoa da Conceição, Barra da Lagoa',p:'Campings, trilhas, sandboard na Joaquina e vida noturna. A cara da viagem de aventura.',c:'Mais barulho à noite na Lagoa.',q:'Lagoa da Conceição Florianópolis'},
+  {n:'Sul',b:'Campeche, Pântano do Sul, Ribeirão da Ilha',p:'Natureza, trilha da Lagoinha do Leste, barco para a Ilha do Campeche e ostras.',c:'Fica a 1h ou 1h30 do norte de carro.',q:'Campeche Florianópolis'},
+  {n:'Centro e continente',b:'Centro, Estreito, Coqueiros',p:'Diárias mais baratas e todas as linhas de ônibus partem daqui.',c:'Sem praia boa para banho. Exige deslocamento diário.',q:'Centro Florianópolis'}],
+ campings:[
+  {n:'Camping Barra da Lagoa',p:'Cerca de R$ 50 a R$ 70 por pessoa/dia',e:'Banheiro com água quente, cozinha, energia e mercado ao lado. Relatos de muitos pernilongos: leve repelente.',q:'Camping Barra da Lagoa Florianópolis'},
+  {n:'Pousada e Camping Lagoa da Conceição',p:'Consulte a diária',e:'Área de barracas e quartos, perto da Lagoa e da Joaquina.',q:'Pousada e Camping Lagoa da Conceição'},
+  {n:'Outros campings da ilha',p:'Compare no mapa',e:'Há opções no Rio Vermelho, Campeche e Pântano do Sul. Ligue antes: lotam no começo de janeiro.',q:'camping Florianópolis'}],
+ gratisOp:[
+  {n:'Voluntariado no Camping Morro das Pedras',t:'Grátis em troca de trabalho',e:'Pela Worldpackers: cerca de 25 h de trabalho por semana (limpeza, jardinagem, recepção), com 2 folgas. Você leva a barraca. Bom para ficar muitos dias gastando pouco.',q:'Camping Morro das Pedras Florianópolis',l:'https://www.worldpackers.com/pt-BR/articles/campings-no-brasil'},
+  {n:'Mirante do Caminho do Rei',t:'Grátis, sem estrutura',e:'Trilha entre a Cachoeira do Bom Jesus e a Praia Brava, no norte da ilha, com mirante usado por viajantes para pernoite. Sem banheiro e sem água: leve 4 L por pessoa e traga todo o lixo. Vá em grupo e confirme as regras do local antes.',q:'Trilha do Caminho do Rei Florianópolis'},
+  {n:'Couchsurfing',t:'Grátis, na casa de moradores',e:'Hospedagem solidária com moradores da ilha. Pouca oferta em janeiro: peça com 3 a 4 semanas de antecedência.',l:'https://www.couchsurfing.com'}],
+ gratis:'Nunca monte barraca na faixa de areia, na Lagoinha do Leste ou em Naufragados: são áreas de proteção e dá multa e remoção.',
+ chuva:'Centro histórico, Mercado Público e Ponte Hercílio Luz; café em Santo Antônio de Lisboa',
+ praias:['Praia de Jurerê','Praia Mole','Campeche','Barra da Lagoa e Prainha','Praia de Canasvieiras','Praia do Santinho','Daniela (mar calmo)','Praia da Joaquina'],
+ noites:{romantica:'Pôr do sol e jantar em Santo Antônio de Lisboa',amigos:'Bares da Lagoa da Conceição',familia:'Passeio e sorvete na Avenida das Rendeiras',aventura:'Jantar leve e descanso',relax:'Noite livre na hospedagem'},
+ ativ:[
+  {id:'jet30',n:'Jet ski 30 min',p:500,u:'jet',tags:['aventura','romantica','amigos'],per:'manha',onde:'Canasvieiras / Ponta das Canas',nota:'Até 2 pessoas por jet. Sem habilitação, você vai com marinheiro habilitado.',est:1,q:'jet ski Canasvieiras'},
+  {id:'jet60',n:'Jet ski 1 hora',p:700,u:'jet',tags:[],per:'manha',onde:'Canasvieiras / Ponta das Canas',nota:'Referência de mercado: R$ 700 por hora por jet, até 2 pessoas.',q:'jet ski Ponta das Canas'},
+  {id:'campeche',n:'Barco até a Ilha do Campeche',p:250,u:'pessoa',tags:['romantica','familia','relax','aventura'],per:'dia',onde:'Saída do Campeche ou da Armação',nota:'Passeio de cerca de 8h. Vagas limitadas por dia: reserve.',q:'Ilha do Campeche barco'},
+  {id:'sandboard',n:'Sandboard nas Dunas da Joaquina',p:60,u:'pessoa',tags:['aventura','amigos','familia'],per:'tarde',onde:'Dunas da Joaquina',nota:'Aluguel da prancha.',est:1,q:'Dunas da Joaquina sandboard'},
+  {id:'lagoinha',n:'Trilha da Lagoinha do Leste',p:0,u:'pessoa',tags:['aventura','romantica'],per:'dia',onde:'Início no Pântano do Sul',nota:'Cerca de 1h30 de subida em cada trecho. Leve 2 L de água por pessoa.',q:'Trilha Lagoinha do Leste'},
+  {id:'costa',n:'Barco e trilha da Costa da Lagoa',p:30,u:'pessoa',tags:['aventura','familia','relax','romantica'],per:'tarde',onde:'Trapiche da Lagoa da Conceição',nota:'Barco coletivo.',est:1,q:'Costa da Lagoa barco'},
+  {id:'surf',n:'Aula de surf',p:150,u:'pessoa',tags:['aventura','amigos'],per:'manha',onde:'Barra da Lagoa / Joaquina',nota:'Por aula, com prancha.',est:1,q:'escola de surf Barra da Lagoa'},
+  {id:'tamar',n:'Projeto Tamar',p:30,u:'pessoa',tags:['familia'],per:'tarde',onde:'Barra da Lagoa',nota:'',q:'Projeto Tamar Florianópolis'},
+  {id:'centro',n:'Centro, Mercado Público e Ponte Hercílio Luz',p:0,u:'pessoa',tags:['familia','relax','romantica','amigos','aventura'],per:'tarde',onde:'Centro',nota:'Ótimo plano para dia nublado.',q:'Mercado Público Florianópolis'},
+  {id:'ostras',n:'Jantar de ostras no Ribeirão da Ilha',p:180,u:'pessoa',tags:['romantica'],per:'noite',onde:'Ribeirão da Ilha',nota:'',est:1,q:'restaurante ostras Ribeirão da Ilha'},
+  {id:'festa',n:'Noite em beach club ou balada',p:150,u:'pessoa',tags:['amigos'],per:'noite',onde:'Jurerê / Lagoa',nota:'Entrada e consumo.',est:1,q:'beach club Jurerê'},
+  {id:'bombinhas',n:'Bate-volta para Bombinhas',p:75,u:'pessoa',tags:['familia','relax'],per:'dia',onde:'Excursão saindo de Floripa',nota:'Água clara para snorkel.',q:'Bombinhas SC'}]},
+
+litsul:{nome:'Litoral sul de SP',curto:'Ilha Comprida e Cananéia',resumo:'O litoral paulista mais perto de Curitiba: praia longa, mangue, golfinhos e preço baixo.',clima:'Janeiro: 25 °C a 31 °C, com mar mais calmo no Mar Pequeno',km:270,tempoCarro:'cerca de 4h pela BR-116 (Régis Bittencourt)',ped:18,bus:120,tempoBus:'5h a 6h, com conexão em Registro',hotel:[200,380,700],airbnb:[220,400,800],camp:[45,60],glamp:300,food:[75,150,280],taxaDia:0,busca:'Ilha Comprida, SP',
+ zonas:[
+  {n:'Ilha Comprida',b:'Boqueirão Norte e Sul',p:'Praia de mais de 70 km, sossegada e barata. Boa para descanso e família.',c:'Mar aberto e pouca vida noturna.',q:'Ilha Comprida SP'},
+  {n:'Cananéia',b:'Centro histórico',p:'Base dos barcos para a Ilha do Cardoso e para ver golfinhos.',c:'As praias de banho ficam em Ilha Comprida ou no Cardoso.',q:'Cananéia SP'},
+  {n:'Iguape',b:'Centro histórico',p:'Cidade colonial com ponte para Ilha Comprida. Diárias baixas.',c:'Fica a 20 ou 30 min da praia.',q:'Iguape SP'}],
+ campings:[
+  {n:'Campings em Ilha Comprida',p:'R$ 40 a R$ 60 por pessoa/dia',e:'Vários perto do Boqueirão. Confirme sombra e água quente.',q:'camping Ilha Comprida'},
+  {n:'Campings do Marujá (Ilha do Cardoso)',p:'Baixo custo, consulte',e:'Dentro do Parque Estadual, só nos campings da comunidade. Acesso apenas de barco. Confirme as regras com o parque.',q:'Marujá Ilha do Cardoso camping'}],
+ gratisOp:[
+  {n:'Voluntariado em campings e hostels',t:'Grátis em troca de trabalho',e:'A Worldpackers tem vagas no litoral paulista: algumas horas de trabalho por dia em troca da hospedagem.',l:'https://www.worldpackers.com/pt-BR'},
+  {n:'Pontos gratuitos de viajantes',t:'Grátis, sem estrutura',e:'No iOverlander e no MaCamp, viajantes marcam pontos de pernoite gratuitos em Ilha Comprida e Cananéia. Use só os que têm avaliação recente.',l:'https://www.ioverlander.com'}],
+ gratis:'Nunca monte barraca na faixa de areia nem no Parque Estadual da Ilha do Cardoso fora dos campings da comunidade.',
+ chuva:'Centro histórico de Iguape e Basílica do Bom Jesus',
+ praias:['Boqueirão Sul (Ilha Comprida)','Praia de Ilha Comprida, trecho norte','Mirante do Morro São João (Cananéia)','Pôr do sol no Mar Pequeno','Praia do Boqueirão Norte'],
+ noites:{romantica:'Jantar de frutos do mar no centro de Cananéia',amigos:'Quiosques do Boqueirão',familia:'Feirinha e sorvete na orla',aventura:'Descanso para o barco do dia seguinte',relax:'Noite livre'},
+ ativ:[
+  {id:'golfinhos',n:'Barco: golfinhos e Ilha do Cardoso',p:120,u:'pessoa',tags:['aventura','romantica','familia','relax','amigos'],per:'dia',onde:'Cais de Cananéia',nota:'',est:1,q:'passeio de barco Cananéia golfinhos'},
+  {id:'jet30',n:'Jet ski 30 min',p:450,u:'jet',tags:['aventura','amigos'],per:'manha',onde:'Mar Pequeno / Ilha Comprida',nota:'Pouca oferta na região: reserve antes.',est:1,q:'aluguel jet ski Ilha Comprida'},
+  {id:'caverna',n:'Caverna do Diabo (Eldorado)',p:60,u:'pessoa',tags:['aventura','familia'],per:'dia',onde:'Eldorado, 1h30 de Cananéia',nota:'Visita guiada.',est:1,q:'Caverna do Diabo Eldorado'},
+  {id:'iguape',n:'Centro histórico de Iguape',p:0,u:'pessoa',tags:['familia','relax','romantica','amigos','aventura'],per:'tarde',onde:'Iguape',nota:'',q:'centro histórico Iguape'},
+  {id:'bike',n:'Pedal pela praia de Ilha Comprida',p:40,u:'pessoa',tags:['aventura','relax','romantica'],per:'manha',onde:'Ilha Comprida',nota:'Aluguel de bike. Pedale na maré baixa.',est:1,q:'aluguel bicicleta Ilha Comprida'},
+  {id:'ostras',n:'Jantar de ostras em Cananéia',p:120,u:'pessoa',tags:['romantica'],per:'noite',onde:'Cananéia',nota:'',est:1,q:'restaurante ostras Cananéia'}]},
+
+litnorte:{nome:'Litoral norte de SP',curto:'Ubatuba e Ilhabela',resumo:'Mata Atlântica até o mar, ilhas, cachoeiras e escunas. Mais longe e mais caro.',clima:'Janeiro: 26 °C a 33 °C, pancadas de chuva à tarde e cachoeiras cheias',km:720,tempoCarro:'9h a 10h, passando por São Paulo',ped:60,bus:300,tempoBus:'11h a 13h, com conexão em São Paulo',hotel:[280,520,1100],airbnb:[300,580,1300],camp:[60,80],glamp:450,food:[90,180,350],taxaDia:13,taxaNota:'Taxa de preservação de Ubatuba: R$ 13 por carro por dia, paga por tag, site ou app da Eco Ubatuba.',busca:'Ubatuba, SP',
+ zonas:[
+  {n:'Ubatuba centro e Itaguá',b:'Itaguá, Perequê-Açu',p:'Estrutura, mercados e saída das escunas.',c:'Praias urbanas cheias.',q:'Itaguá Ubatuba'},
+  {n:'Ubatuba norte',b:'Prumirim, Félix, Itamambuca',p:'Natureza, cachoeiras e surf. Clima romântico.',c:'Precisa de carro.',q:'Itamambuca Ubatuba'},
+  {n:'Ilhabela',b:'Perequê, Vila',p:'Jet ski, Baía de Castelhanos e cachoeiras.',c:'Fila na balsa em janeiro e borrachudos: repelente forte.',q:'Perequê Ilhabela'},
+  {n:'São Sebastião',b:'Maresias, Camburi',p:'Praias badaladas e vida noturna.',c:'Diárias altas.',q:'Maresias São Sebastião'}],
+ campings:[
+  {n:'Campings em Ubatuba',p:'R$ 50 a R$ 80 por pessoa/dia',e:'Muitos no norte da cidade, perto de praias e cachoeiras.',q:'camping Ubatuba'},
+  {n:'Campings em Ilhabela',p:'R$ 60 a R$ 90 por pessoa/dia',e:'Escolha um com área coberta: chove muito à tarde.',q:'camping Ilhabela'}],
+ gratisOp:[
+  {n:'Voluntariado em campings de Ubatuba',t:'Grátis em troca de trabalho',e:'Campings de Ubatuba recebem voluntários em troca de hospedagem pela Worldpackers.',l:'https://www.worldpackers.com/pt-BR/articles/camping-em-ubatuba'},
+  {n:'Pontos gratuitos de viajantes',t:'Grátis, sem estrutura',e:'No iOverlander e no MaCamp, viajantes marcam pontos de pernoite gratuitos em Ubatuba e Ilhabela. Use só os que têm avaliação recente.',l:'https://www.ioverlander.com'}],
+ gratis:'Nunca monte barraca na faixa de areia nem no Parque Estadual da Serra do Mar fora das áreas autorizadas.',
+ chuva:'Aquário de Ubatuba e centro histórico de São Sebastião',
+ praias:['Praia do Félix','Praia Vermelha do Norte','Itamambuca','Praia do Lázaro','Prainha do Prumirim','Praia do Curral (Ilhabela)','Praia da Fortaleza'],
+ noites:{romantica:'Jantar com vista no Itaguá',amigos:'Bares de Maresias',familia:'Feira de artesanato no centro',aventura:'Descanso para a trilha',relax:'Noite livre'},
+ ativ:[
+  {id:'jet30',n:'Jet ski 30 min',p:550,u:'jet',tags:['aventura','romantica','amigos'],per:'manha',onde:'Ilhabela / Itaguá',nota:'Sem habilitação, com condutor habilitado.',est:1,q:'aluguel jet ski Ilhabela'},
+  {id:'escuna',n:'Escuna Ilha das Couves ou Anchieta',p:140,u:'pessoa',tags:['familia','romantica','relax','amigos','aventura'],per:'dia',onde:'Picinguaba / Saco da Ribeira',nota:'R$ 100 a R$ 180 por pessoa.',q:'escuna Ilha das Couves'},
+  {id:'sup',n:'Stand-up paddle 1 hora',p:65,u:'pessoa',tags:['aventura','romantica','relax'],per:'manha',onde:'Praias de mar calmo',nota:'R$ 50 a R$ 80 a hora.',q:'stand up paddle Ubatuba'},
+  {id:'castelhanos',n:'Baía de Castelhanos (4x4)',p:200,u:'pessoa',tags:['aventura','amigos'],per:'dia',onde:'Ilhabela',nota:'',est:1,q:'Baía de Castelhanos 4x4'},
+  {id:'tamar',n:'Projeto Tamar',p:30,u:'pessoa',tags:['familia'],per:'tarde',onde:'Ubatuba centro',nota:'',q:'Projeto Tamar Ubatuba'},
+  {id:'cachoeira',n:'Trilha da Cachoeira do Prumirim',p:0,u:'pessoa',tags:['aventura','familia','romantica','relax'],per:'tarde',onde:'Ubatuba norte',nota:'Grátis, com estacionamento pago.',q:'Cachoeira do Prumirim'},
+  {id:'jantar',n:'Jantar especial',p:200,u:'pessoa',tags:['romantica'],per:'noite',onde:'Itaguá',nota:'',est:1,q:'restaurante Itaguá Ubatuba'},
+  {id:'festa',n:'Noite em Maresias',p:150,u:'pessoa',tags:['amigos'],per:'noite',onde:'Maresias',nota:'',est:1,q:'Maresias bares'}]},
+
+regiao:{nome:'Curitiba e região',curto:'Curitiba e litoral do PR',resumo:'Base em casa, com escapadas para Ilha do Mel, Guaratuba e Morretes. O plano mais barato.',clima:'Janeiro: perto de 22 °C em Curitiba e 29 °C no litoral',km:110,kmExtra:260,tempoCarro:'1h30 a 2h até o litoral',ped:15,bus:60,tempoBus:'2h a 3h até Pontal do Sul ou Guaratuba',hotel:[220,400,800],airbnb:[250,450,900],camp:[50,70],glamp:350,food:[60,130,250],taxaDia:0,noitesFora:6,busca:'Ilha do Mel, PR',
+ zonas:[
+  {n:'Em casa (Curitiba)',b:'Sua casa',p:'Noites sem custo. Dias de parque, gastronomia e passeios curtos.',c:'Menos sensação de viagem.',q:'Jardim Botânico Curitiba'},
+  {n:'Ilha do Mel',b:'Encantadas e Nova Brasília',p:'Sem carros. Trilhas, Farol das Conchas e Gruta das Encantadas. Campings e pousadas.',c:'Limite de cerca de 5 mil visitantes por dia: chegue cedo.',q:'Ilha do Mel'},
+  {n:'Guaratuba e Caiobá',b:'Centro e Brejatuba',p:'Jet ski na baía, ferry boat, praias com estrutura.',c:'Cheio em janeiro.',q:'Guaratuba PR'},
+  {n:'Morretes e Antonina',b:'Centro histórico',p:'Serra do Mar, barreado e rios.',c:'Sem praia.',q:'Morretes PR'}],
+ campings:[
+  {n:'Campings da Ilha do Mel',p:'R$ 50 a R$ 70 por pessoa/dia',e:'Em Encantadas e Nova Brasília. Alguns alugam barraca e colchão.',q:'camping Ilha do Mel'},
+  {n:'Campings em Guaratuba e Matinhos',p:'R$ 45 a R$ 65 por pessoa/dia',e:'Bons para ir de carro e ficar perto do jet ski.',q:'camping Guaratuba'}],
+ gratisOp:[
+  {n:'Ponto gratuito em Pontal do Paraná',t:'Grátis, com água e luz',e:'Área à beira-mar na Rua das Encantadas, perto do embarque para a Ilha do Mel, com água, energia e deck, usada por viajantes para pernoite. O relato é de 2021: confirme se continua liberado antes de ir.',q:'Rua das Encantadas Pontal do Paraná'},
+  {n:'Camping Municipal de Guaratuba',t:'Municipal, consulte o valor',e:'Mantido pela prefeitura e bem mais barato que camping particular. Confirme cobrança e vagas para janeiro.',q:'Camping Municipal Guaratuba'},
+  {n:'Acampamento de montanha',t:'Grátis ou baixo custo, com cadastro',e:'Pico Paraná e Marumbi permitem pernoite em áreas definidas, com cadastro no parque. Exige experiência e equipamento de montanha.',q:'Parque Estadual Pico Paraná'}],
+ gratis:'Nunca monte barraca na areia ou em área de preservação do litoral do Paraná.',
+ chuva:'Museu Oscar Niemeyer, Mercado Municipal e Santa Felicidade',
+ praias:['Parque Barigui e Parque Tanguá','Jardim Botânico e Ópera de Arame','Praia de Encantadas (Ilha do Mel)','Praia Grande (Ilha do Mel)','Praia Central de Guaratuba','Morro do Cristo em Caiobá'],
+ noites:{romantica:'Jantar em Santa Felicidade',amigos:'Bares do Largo da Ordem',familia:'Pizza e filme em casa',aventura:'Descanso',relax:'Noite livre'},
+ ativ:[
+  {id:'ilhamel',n:'Travessia Pontal do Sul ↔ Ilha do Mel',p:44.18,u:'pessoa',tags:['aventura','romantica','familia','relax','amigos'],per:'manha',onde:'Pontal do Sul',nota:'R$ 44,18 ida e volta. Estacionamento em Pontal: R$ 20 a R$ 80 por dia.',q:'Pontal do Sul travessia Ilha do Mel'},
+  {id:'farol',n:'Trilha do Farol das Conchas e Gruta das Encantadas',p:0,u:'pessoa',tags:['aventura','romantica','familia','relax','amigos'],per:'tarde',onde:'Ilha do Mel',nota:'Grátis.',q:'Farol das Conchas Ilha do Mel'},
+  {id:'golfinhos',n:'Barco na Baía dos Golfinhos',p:80,u:'pessoa',tags:['familia','romantica','relax'],per:'manha',onde:'Ilha do Mel',nota:'A partir de R$ 80.',q:'Baía dos Golfinhos Ilha do Mel'},
+  {id:'jet30',n:'Jet ski 30 min em Guaratuba',p:400,u:'jet',tags:['aventura','amigos','romantica'],per:'manha',onde:'Baía de Guaratuba',nota:'',est:1,q:'aluguel jet ski Guaratuba'},
+  {id:'trem',n:'Trem Curitiba–Morretes e barreado',p:250,u:'pessoa',tags:['romantica','familia','relax'],per:'dia',onde:'Rodoferroviária de Curitiba',nota:'Trem e almoço; varia pela classe.',est:1,q:'Serra Verde Express'},
+  {id:'anhangava',n:'Trilha do Morro do Anhangava',p:0,u:'pessoa',tags:['aventura','amigos'],per:'manha',onde:'Quatro Barras',nota:'Trilha curta com vista da serra.',q:'Morro do Anhangava'},
+  {id:'parques',n:'Parques de Curitiba',p:0,u:'pessoa',tags:['familia','relax','romantica','amigos','aventura'],per:'tarde',onde:'Curitiba',nota:'Jardim Botânico, Barigui e Tanguá.',q:'Parque Tanguá Curitiba'},
+  {id:'santa',n:'Jantar em Santa Felicidade',p:120,u:'pessoa',tags:['romantica','familia'],per:'noite',onde:'Curitiba',nota:'',est:1,q:'Santa Felicidade restaurantes'}]}
+};
+const ORDEM=['floripa','litsul','litnorte','regiao'];
+
+/* ===================== ESTADO ===================== */
+const K='rumo-viagem-v1';
+function defAtiv(did,tipo,querJet){const o={};for(const a of DEST[did].ativ){if(a.id==='jet60')continue;if(a.tags.includes(tipo)||(a.id==='jet30'&&querJet))o[a.id]=1}return o}
+function def(){return{origem:'Curitiba',inicio:'2027-01-04',fim:'2027-01-18',destino:'floripa',pessoas:[{nome:'Você',idade:30},{nome:'Acompanhante',idade:30}],tipo:'aventura',transporte:'carro',hosp:'comparar',temEquip:false,querJet:true,teto:10000,tier:'intermediario',kml:11,gas:6.4,ativ:defAtiv('floripa','aventura',true),econ:{},depositos:[],gastos:[],checks:{},rt:null,exemplo:true}}
+let st;try{st=JSON.parse(localStorage.getItem(K))}catch(e){st=null}
+if(!st||!st.pessoas)st=def();
+function save(){try{localStorage.setItem(K,JSON.stringify(st))}catch(e){}}
+
+/* ===================== UTIL ===================== */
+const brl=v=>(Math.round(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pd=s=>{const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const addD=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const WD=['dom','seg','ter','qua','qui','sex','sáb'];const MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const fd=d=>`${WD[d.getDay()]}, ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+const fdl=d=>`${d.getDate()} ${MES[d.getMonth()]}`;
+const hoje=()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate())};
+const diff=(a,b)=>Math.round((b-a)/864e5);
+function noites(){const n=diff(pd(st.inicio),pd(st.fim));return Math.max(1,n||1)}
+function diasLista(){const out=[];const a=pd(st.inicio);for(let i=0;i<=noites();i++)out.push(addD(a,i));return out}
+const P=()=>Math.max(1,st.pessoas.length);
+const kids=()=>st.pessoas.filter(p=>+p.idade<12).length;
+const maps=q=>`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+const tierIdx=t=>TIERS.indexOf(t);
+function noitesLista(){const a=pd(st.inicio);return Array.from({length:noites()},(_,i)=>iso(addD(a,i)))}
+function noiteInfo(did,tier,i,date){const D=DEST[did],ti=tierIdx(tier),p=P();const o=did===st.destino&&st.noites&&st.noites[date];let t,v,custom=false;
+ if(o&&o.t){t=o.t;if(o.v!=null&&o.v!==''&&!isNaN(+o.v)){v=+o.v;custom=true}else v=hospNoite(D,t,ti,p)}
+ else{t=(did==='regiao'&&i>=D.noitesFora)?'casa':hospTipo(tier);v=hospNoite(D,t,ti,p)}
+ return{t,v,custom,n:(o&&o.n)||'',manual:!!(o&&o.t)}}
+function temCamping(){return noitesLista().some((d,i)=>{const x=noiteInfo(st.destino,st.tier,i,d);return x.t==='gratis'||(x.t==='camping'&&(tierIdx(st.tier)<2||x.manual))})}
+function hospTipo(t){return st.hosp==='comparar'?{economico:'camping',intermediario:'airbnb',premium:'hotel'}[t]:st.hosp}
+function hospNoite(D,t,ti,p){if(t==='gratis'||t==='casa')return 0;if(t==='hotel')return Math.ceil(p/2)*D.hotel[ti];if(t==='airbnb')return D.airbnb[ti]*(p<=4?1:1+.25*Math.ceil((p-4)/2));return ti<2?p*D.camp[ti]:Math.ceil(p/2)*D.glamp}
+function ativDe(did){return did===st.destino?st.ativ:defAtiv(did,st.tipo,st.querJet)}
+function grupoLabel(){const p=P(),k=kids();if(p===1)return'Viagem solo';if(k)return`${p} pessoas, ${k} criança${k>1?'s':''}`;if(p===2)return'2 pessoas';return`${p} pessoas`}
+
+/* ===================== MOTOR DE ORÇAMENTO ===================== */
+function transporteCusto(D,ti,modo,days){const p=P(),carros=Math.ceil(p/5);
+ if(modo==='carro'){const km=D.km*2+(D.kmExtra||0);return{ida:km/st.kml*st.gas*carros+D.ped*2*carros,local:[20,35,60][ti]*days*carros,km,carros,taxa:(D.taxaDia||0)*days*carros}}
+ if(modo==='carona'){const km=D.km*2+(D.kmExtra||0);return{ida:km*CARONA[ti]*p,local:[12*p,70,220][ti]*days,km,carros:0,taxa:0}}
+ return{ida:D.bus*2*p,local:[12*p,70,220][ti]*days,km:0,carros:0,taxa:0}}
+const caronaTrecho=(D,ti)=>D.km*CARONA[ti];
+function calc(did,tier){
+ const D=DEST[did],ti=tierIdx(tier),N=noites(),days=N+1,p=P(),k=kids(),eq=p-k+k*.6;
+ const tr=transporteCusto(D,ti,st.transporte,days);
+ const ht=hospTipo(tier);const NL=noitesLista().map((d,i)=>({d,...noiteInfo(did,tier,i,d)}));const nP=NL.filter(x=>x.t!=='casa').length||1;const hospV=NL.reduce((s,x)=>s+x.v,0);const manual=NL.some(x=>x.manual);const cont={};NL.forEach(x=>cont[x.t]=(cont[x.t]||0)+1);const anyCamp=NL.some(x=>x.t==='gratis'||(x.t==='camping'&&(ti<2||x.manual)));
+ const at=ativDe(did);let pas=0;const lista=[];
+ for(const[id,q]of Object.entries(at)){const a=D.ativ.find(x=>x.id===id);if(!a||!q)continue;const v=a.p*(a.u==='jet'?Math.ceil(p/2):a.u==='pessoa'?p:1)*q;pas+=v;lista.push({a,q,v})}
+ let tx=tr.taxa;const txd=[];if(tr.taxa)txd.push('taxa ambiental de Ubatuba');
+ if(did==='regiao'&&at.ilhamel&&st.transporte==='carro'){tx+=40*3*tr.carros;txd.push('estacionamento em Pontal do Sul')}
+ const L={
+  ida:{c:'transporte',n:'Ida e volta',v:tr.ida,d:st.transporte==='carro'?`${tr.km} km de estrada, combustível e pedágios`:st.transporte==='carona'?`Carona BlaBlaCar, cerca de ${brl(caronaTrecho(D,ti))} por trecho por pessoa`:`Ônibus, ${brl(D.bus)} por trecho por pessoa`},
+  local:{c:'transporte',n:'Transporte no destino',v:tr.local,d:st.transporte==='carro'?'Combustível local e estacionamentos':['Ônibus urbano','Aplicativo de transporte','Carro alugado no destino'][ti]},
+  taxas:{c:'transporte',n:'Taxas',v:tx,d:txd.join(' e ')||'Sem taxas obrigatórias'},
+  hosp:{c:'hosp',n:'Hospedagem',v:hospV,d:manual?'Noite a noite: '+Object.entries(cont).map(([t,n])=>`${n} em ${HOSPL[t]}`).join(', '):`${HOSPN[ht][ti]}, ${nP} noite${nP>1?'s':''}`+(did==='regiao'?' fora de casa':'')},
+  comida:{c:'comida',n:'Alimentação',v:D.food[ti]*eq*days,d:`${brl(D.food[ti])} por pessoa por dia`},
+  passeios:{c:'passeios',n:'Passeios',v:pas,d:lista.length?lista.map(x=>x.a.n).join(', '):'Nenhum passeio pago escolhido'},
+  lazer:{c:'extras',n:'Extras do dia',v:[0,25,80][ti]*p*days,d:ti?'Cadeira de praia, sorvete, lembranças':'Sem extras no plano básico'},
+  equip:{c:'extras',n:'Kit de camping',v:anyCamp&&!st.temEquip?680+210*p:0,d:'Compra única: o equipamento fica com você'}
+ };
+ const sub=Object.values(L).reduce((s,x)=>s+x.v,0);
+ L.reserva={c:'extras',n:'Reserva para imprevistos',v:sub*.08,d:'8% do total'};
+ const total=sub+L.reserva.v;
+ return{did,tier,ti,L,total,ht,nP,days,N,tr,lista,NL,manual}}
+function porCat(C){const o={transporte:0,hosp:0,comida:0,passeios:0,extras:0};for(const x of Object.values(C.L))o[x.c]+=x.v;return o}
+
+function economias(C){
+ const D=DEST[C.did],p=P(),out=[],L=C.L,ti=C.ti,days=C.days;
+ if(C.ht!=='hotel')out.push({id:'cozinhar',n:'Cozinhar café da manhã e jantar',d:'Sua hospedagem tem cozinha. Mercado custa bem menos que restaurante.',v:L.comida.v*.35});
+ else out.push({id:'cozinhar',n:'Escolher hospedagem com café da manhã incluso',d:'Uma refeição a menos por dia na rua.',v:L.comida.v*.15});
+ out.push({id:'lanche',n:'Levar lanche, água e cooler para a praia',d:'Quiosque de praia em janeiro cobra caro por água e petisco.',v:Math.min(20*p*days,L.comida.v*.15)});
+ const atual=L.ida.v+L.local.v+L.taxas.v;let best=null;
+ for(const m of ['carona','onibus','carro']){if(m===st.transporte)continue;const t2=transporteCusto(D,ti,m,days);const alt=t2.ida+t2.local+t2.taxa;if(!best||alt<best.alt)best={m,alt}}
+ if(best&&atual-best.alt>30)out.push({id:'modo',n:{carona:'Ir de carona pelo BlaBlaCar',onibus:'Ir de ônibus e usar transporte público',carro:'Ir de carro e dividir combustível'}[best.m],d:`O meio de transporte mais barato para ${grupoLabel().toLowerCase()} nesse destino.`,v:atual-best.alt});
+ if(st.transporte!=='carro'&&ti>0)out.push({id:'busurb',n:'Usar ônibus urbano no destino',d:'Troca aplicativo ou carro alugado por ônibus.',v:L.local.v-12*p*days});
+ if(C.ht!=='camping'&&C.ht!=='gratis'){const v=L.hosp.v-p*D.camp[1]*C.nP;if(v>0)out.push({id:'acampar',n:'Trocar a hospedagem por camping com estrutura',d:'Banheiro quente, cozinha e energia, pagando por pessoa.',v})}
+ if(C.ht!=='gratis'&&L.hosp.v>0)out.push({id:'gratis',n:'Acampar de graça em parte das noites',d:'Metade das noites em voluntariado ou ponto gratuito. Veja as opções em Hospedagem.',v:L.hosp.v*.5});
+ if(L.equip.v>0)out.push({id:'emprestar',n:'Pegar barraca e equipamento emprestados',d:'Ou alugue barraca e colchão no próprio camping.',v:L.equip.v*.8});
+ if(st.ativ.jet60&&C.did===st.destino){const a30=D.ativ.find(a=>a.id==='jet30'),a60=D.ativ.find(a=>a.id==='jet60');if(a30&&a60)out.push({id:'jet',n:'Jet ski de 30 min em vez de 1 hora',d:'Meia hora já dá para curtir bem, ainda mais dividindo o jet.',v:(a60.p-a30.p)*Math.ceil(p/2)*st.ativ.jet60})}
+ if(C.N>4)out.push({id:'noites',n:'Encurtar a viagem em 2 noites',d:'Volta antes e economiza hospedagem, comida e extras.',v:(L.hosp.v/C.nP+L.comida.v/days+L.lazer.v/days)*2});
+ out.push({id:'antecedencia',n:'Reservar a hospedagem até 15 de dezembro',d:'Estimativa. Em janeiro o que sobra fica mais caro.',v:L.hosp.v*.1});
+ if(ti>0)out.push({id:'extras',n:'Cortar os extras do dia pela metade',d:'Menos lembrancinha, sorvete e cadeira alugada.',v:L.lazer.v*.5});
+ return out.filter(e=>e.v>5)}
+function plano(){const C=calc(st.destino,st.tier);const E=economias(C);const eco=E.filter(e=>st.econ[e.id]).reduce((s,e)=>s+e.v,0)*1.08;return{C,E,eco,meta:Math.max(0,C.total-eco)}}
+
+/* ===================== ROTEIRO ===================== */
+function sigRt(){return JSON.stringify([st.destino,st.inicio,st.fim,st.tipo,st.ativ,st.transporte,st.hosp,st.tier,st.noites||{}])}
+function gerarRoteiro(){
+ const D=DEST[st.destino],ds=diasLista(),car=st.transporte==='carro',cr=st.transporte==='carona',ht=hospTipo(st.tier),NL0=noitesLista().map((d,i)=>noiteInfo(st.destino,st.tier,i,d)),ehCamp=x=>!!x&&(x.t==='camping'||x.t==='gratis'),camp=ehCamp(NL0[0]),campLast=ehCamp(NL0[NL0.length-1]);
+ const at=Object.entries(st.ativ).filter(([,q])=>q>0).flatMap(([id,q])=>Array(q).fill(D.ativ.find(a=>a.id===id))).filter(Boolean);
+ const dia=at.filter(a=>a.per==='dia'),meia=at.filter(a=>a.per==='manha'||a.per==='tarde'),noite=at.filter(a=>a.per==='noite');
+ const jet=meia.findIndex(a=>a.id.startsWith('jet'));let jetA=null;if(jet>=0)jetA=meia.splice(jet,1)[0];
+ const days=ds.map(d=>({date:iso(d),items:[]}));const last=days.length-1;let praia=0;
+ const nextPraia=()=>D.praias[(praia++)%D.praias.length];
+ const it=(h,t,tag)=>({h,t,tag:tag||'',done:false});
+ days[0].items.push(car?it('05:30','Saída de casa. Saia antes das 6h para pegar a estrada vazia','viagem'):cr?it('06:00','Encontro com o motorista da carona no ponto combinado','viagem'):it('06:30','Ônibus na rodoviária. Chegue 40 min antes','viagem'));
+ days[0].items.push(it(car?'10:30':'12:00',`Chegada a ${D.curto}. ${car?'Parada no caminho para café e combustível':'Siga de app ou ônibus até a hospedagem'}`,'viagem'));
+ days[0].items.push(it('14:00',(camp?'Check-in no camping e montar a barraca antes de escurecer':NL0[0]&&NL0[0].t==='casa'?'Chegada na casa de quem vai te receber':'Check-in e mercado para os primeiros dias')+(NL0[0]&&NL0[0].n?` (${NL0[0].n})`:''),'base'));
+ days[0].items.push(it('17:00',`Primeira praia sem pressa: ${nextPraia()}`,'praia'));
+ days[0].items.push(it('20:00',D.noites[st.tipo],'noite'));
+ const meio=[];for(let i=1;i<last;i++)meio.push(i);
+ if(jetA&&meio.length){const i=meio[Math.min(1,meio.length-1)];days[i].items.push(it('09:00',`${jetA.n} em ${jetA.onde}. Reserva confirmada; manhã tem mar mais calmo`,'passeio'),it('14:00',`Praia: ${nextPraia()}`,'praia'))}
+ const livres=meio.filter(i=>!days[i].items.length);let di=0;
+ for(const a of dia){const i=livres[di++];if(i==null)break;days[i].items.push(it('08:00',`${a.n} (${a.onde})`,'passeio'))}
+ let slot=livres.slice(di);let si=0;
+ for(const a of meia){const i=slot[Math.floor(si/2)];if(i==null)break;const man=si%2===0;days[i].items.push(it(man?'09:00':'14:30',`${a.n} (${a.onde})`,'passeio'));si++}
+ meio.forEach((i,n)=>{const d=days[i];const m=d.items.some(x=>x.h<'12:00'),t=d.items.some(x=>x.h>='12:00'&&x.h<'19:00')||d.items.some(x=>x.h==='08:00');
+  if((n+1)%5===0&&!d.items.length){d.items.push(it('09:00','Dia livre e de descanso. Se chover: '+D.chuva,'livre'));return}
+  if(!m&&!d.items.some(x=>x.h==='08:00'))d.items.push(it('09:00',`Praia: ${nextPraia()}`,'praia'));
+  if(!t)d.items.push(it('15:00',n%3===2?'Tarde livre: cochilo, lavar roupa, repor o mercado':`Praia: ${nextPraia()}`,'praia'));});
+ let ni=0;meio.forEach(i=>{const a=noite[ni];if(a&&i%3===2){days[i].items.push(it('20:00',`${a.n} (${a.onde})`,'passeio'));ni++}else days[i].items.push(it('20:00',D.noites[st.tipo],'noite'))});
+ while(ni<noite.length&&meio.length){const i=meio[meio.length-1-ni%meio.length];const d=days[i];d.items=d.items.filter(x=>x.h!=='20:00');d.items.push(it('20:00',`${noite[ni].n} (${noite[ni].onde})`,'passeio'));ni++}
+ if(last>0){days[last].items.push(it('08:00',campLast?'Desmontar a barraca seca (se molhada, seque em casa no mesmo dia)':'Café e fechar as malas','base'),it('11:00','Check-out. Confira carregadores e documentos','base'),it('12:00','Almoço e pé na estrada','viagem'),it(car?'17:30':'19:00','Chegada em casa','viagem'))}
+ for(let i=1;i<NL0.length;i++){const a=NL0[i-1],b=NL0[i];if(a.t!==b.t||a.n!==b.n){const lb=HOSPL[b.t];days[i].items.push(it('10:30',`Mudança de hospedagem: ${ehCamp(a)?'desmontar a barraca e ':''}fazer check-out`,'base'),it('14:00',`Check-in: ${lb}${b.n?` (${b.n})`:''}${b.custom?`, ${brl(b.v)} a noite`:''}${ehCamp(b)?'. Monte a barraca antes de escurecer':''}`,'base'))}}
+ days.forEach(d=>d.items.sort((a,b)=>a.h.localeCompare(b.h)));
+ return days}
+function rt(){const s=sigRt();if(!st.rt||st.rt.sig!==s){const old=st.rt;const days=gerarRoteiro();if(old){const done=new Set();old.days.forEach(d=>d.items.forEach(x=>{if(x.done)done.add(d.date+'|'+x.t)}));days.forEach(d=>{d.items.forEach(x=>{if(done.has(d.date+'|'+x.t))x.done=true});const od=old.days.find(o=>o.date===d.date);if(od)od.items.filter(x=>x.custom).forEach(x=>d.items.push(x));d.items.sort((a,b)=>a.h.localeCompare(b.h))})}st.rt={sig:s,days};save()}return st.rt}
+
+/* ===================== LISTAS ===================== */
+function listas(){
+ const p=P(),k=kids(),N=noites(),q=Math.min(N+1,7),ht=hospTipo(st.tier),camp=temCamping(),car=st.transporte==='carro',at=st.ativ,S=[];
+ const jet=Object.keys(at).some(x=>x.startsWith('jet')&&at[x]);
+ S.push({id:'doc',t:'Documentos e dinheiro',i:['RG ou CNH de todos','Cartões e algum dinheiro em espécie (quiosques e barcos)','Carteirinha do plano de saúde ou cartão do SUS','Comprovantes das reservas salvos offline no celular','Pix funcionando e limite do cartão conferido',car&&'Telefone da seguradora e da assistência 24 h anotados',car&&'CNH e documento do carro (CRLV digital)',st.transporte==='carona'&&'Reserva da carona e contato do motorista salvos no celular',jet&&'Carteira de motonauta (CHA), se você tiver',k&&'RG ou certidão de nascimento das crianças'].filter(Boolean)});
+ S.push({id:'mala',t:`Mala por pessoa (${q} dias de roupa${N+1>7?', lavar uma vez':''})`,i:[`${q} camisetas leves`,`${Math.ceil(q/2)} bermudas ou shorts`,'2 roupas de banho (uma seca enquanto usa a outra)','1 casaco leve para a noite e capa de chuva','Roupa íntima e meias para os dias','Chinelo e tênis confortável','Pijama',st.tipo==='romantica'&&'Uma roupa para o jantar especial',(st.tipo==='aventura'||at.lagoinha||at.cachoeira||at.anhangava)&&'Tênis de trilha ou papete','Mochila pequena (15 a 20 L) para os passeios, sem levar a mala','Toalha de microfibra','Bolsa estanque para o celular','Carregador e bateria portátil',st.transporte==='carona'&&'Mala média: avise o motorista o que você vai levar'].filter(Boolean)});
+ S.push({id:'praia',t:'Praia e sol',i:[`Protetor solar FPS 50 (${Math.ceil(p*(N+1)/7)} frasco${Math.ceil(p*(N+1)/7)>1?'s':''} para o grupo)`,'Chapéu ou boné','Óculos de sol','Protetor labial e protetor facial','Canga ou toalha de praia','Garrafa de água reutilizável por pessoa','Repelente','Pós-sol',k&&'Boia, colete infantil e brinquedos de areia'].filter(Boolean)});
+ S.push({id:'farm',t:'Farmácia',i:['Remédios de uso contínuo','Analgésico e antitérmico','Antialérgico','Remédio para enjoo (barco e jet ski)','Curativos e esparadrapo','Soro fisiológico','Álcool em gel']});
+ if(camp)S.push({id:'camp',t:'Camping',i:[`Barraca para ${p+1} pessoas (sobra espaço para as mochilas)`,'Lona extra (tarp) e 10 m de corda para chuva','Estacas extras e martelo de borracha',`${p} colchões infláveis ou isolantes e bomba`,`${p} sacos de dormir leves ou lençóis`,'Travesseiros','Lanterna de cabeça por pessoa e pilhas','Fogareiro e 2 cartuchos de gás (confirme se o camping permite)','Panela, frigideira, talheres, pratos e canecas','Esponja, detergente e pano de prato','Cooler e gelo','Galão de água de 5 L','Extensão elétrica de 10 m e benjamim','Confirmar a voltagem das tomadas (110 V ou 220 V) antes de levar ventilador','Ventilador USB (janeiro é quente)','Varal e prendedores','Sacos de lixo','Papel higiênico e lenço umedecido','Cadeado pequeno para a barraca','Cadeiras dobráveis']});
+ if(noitesLista().some((d,i)=>noiteInfo(st.destino,st.tier,i,d).t==='gratis'))S.push({id:'livre',t:'Camping grátis (sem estrutura)',i:[`Água: ${p*4} L por noite para o grupo (beber, cozinhar e higiene)`,'Pá pequena e sacos para trazer todo o lixo de volta','Bateria portátil grande (sem tomada no local)','Lenços umedecidos e sabonete biodegradável','Apito e lanterna extra','Avisar alguém de onde vai dormir e o horário de volta']});
+ if(ht!=='hotel')S.push({id:'merc',t:'Mercado para os primeiros 3 dias',i:['Fazer a compra grande no mercado do bairro, longe da orla','Café, açúcar e leite','Pão de forma e bisnaguinha','Frutas que aguentam calor (maçã, banana, laranja)',`Água: ${p*2*3} L (2 L por pessoa por dia)`,'Ovos, queijo e presunto','Macarrão, molho pronto e arroz','Atum ou sardinha em lata','Biscoitos, castanhas e barras de cereal para a praia','Gelo (repor todo dia no camping)','Sacos zip para guardar comida','Sal e azeite em embalagem pequena']});
+ if(car)S.push({id:'carro',t:'Carro',i:['Calibrar pneus e conferir o estepe','Óleo e água do radiador','Tag de pedágio ativa'+(st.destino==='litnorte'?' (também paga a taxa de Ubatuba)':''),'Carregador veicular','Triângulo e macaco','Playlist e mapas baixados offline']});
+ S.push({id:'casa',t:'Antes de sair de casa',i:['Fechar o registro de gás','Tirar aparelhos da tomada','Esvaziar o lixo e tirar perecíveis da geladeira','Pedir para alguém recolher correspondência','Deixar plantas e pets com alguém','Trancar portas e janelas']});
+ return S}
+function preViagem(){const a=pd(st.inicio);const x=(n,t)=>({id:'pre'+n,d:addD(a,-n),t});const c=temCamping();
+ return[x(50,'Fechar destino, estilo e quem vai'),x(45,'Reservar a hospedagem: janeiro lota'),x(40,st.transporte==='onibus'?'Comprar as passagens de ônibus':st.transporte==='carona'?'Ver caronas no BlaBlaCar e salvar o trajeto':'Revisar o carro (pneus, freios, óleo)'),x(30,'Reservar jet ski e passeios de barco'),c&&x(20,'Montar a barraca em casa para testar e ver se falta peça'+(hospTipo(st.tier)==='gratis'?'; confirmar o ponto gratuito ou o voluntariado':'')),st.transporte==='carona'&&x(14,'Reservar a carona de ida e a de volta no BlaBlaCar (tenha o ônibus como plano B)'),x(10,'Farmácia e itens que faltam da lista'),x(3,'Mercado de não perecíveis e separar documentos'),x(1,'Mala pronta, previsão do tempo e tábua de marés conferidas'+(st.transporte==='carro'?', tanque cheio':'')),x(0,'Viagem: sair cedo')].filter(Boolean)}
+
+
+
+/* ===================== NOVA INTERFACE ===================== */
+st=Object.assign(def(),{quiz:false,fav:{},pacote:'',tema:'auto',noites:{}},st);if(!st.noites)st.noites={};
+const TEMAS={auto:['auto','Tema automático'],claro:['sun','Tema claro'],escuro:['moon','Tema escuro']};
+function aplicarTema(){const r=document.documentElement;if(st.tema==='claro')r.dataset.theme='light';else if(st.tema==='escuro')r.dataset.theme='dark';else delete r.dataset.theme;const b=$('#tema');if(b){b.innerHTML=ic(TEMAS[st.tema][0],20);b.setAttribute('aria-label',TEMAS[st.tema][1]+'. Tocar para trocar');b.title=TEMAS[st.tema][1]}}if(!st.fav)st.fav={};
+function $(s){return document.querySelector(s)}
+
+/* ---------- ícones ---------- */
+const I={
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+ wave:'<path d="M2 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2"/><path d="M2 19c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2"/><path d="M8 10a4 4 0 0 1 8 0"/>',
+ tent:'<path d="M3 20 12 4l9 16H3z"/><path d="M9 20l3-6 3 6"/>',
+ house:'<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/>',
+ hotel:'<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2"/>',
+ car:'<path d="M5 17h14v-5l-2-5H7l-2 5v5z"/><circle cx="8" cy="17" r="2"/><circle cx="16" cy="17" r="2"/><path d="M5 12h14"/>',
+ bus:'<rect x="5" y="3" width="14" height="15" rx="2"/><path d="M5 11h14M8 21v-3M16 21v-3"/>',
+ ride:'<path d="M7 11v9H4v-9h3z"/><path d="M7 11l4-7c1.5 0 2.5 1 2 3l-1 3h6a2 2 0 0 1 2 2.3l-1.2 6A2 2 0 0 1 16.8 20H7"/>',
+ heart:'<path d="M12 20s-7-4.4-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.6-9 9-9 9z"/>',
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+ users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.5a5 5 0 0 1 5.5 5.5"/>',
+ family:'<circle cx="7" cy="6" r="2.5"/><circle cx="17" cy="6" r="2.5"/><circle cx="12" cy="12.5" r="2"/><path d="M3 21c0-4 1.8-7 4-7 1.4 0 2.4.8 3 2M21 21c0-4-1.8-7-4-7-1.4 0-2.4.8-3 2M9 21c0-2 1.3-3.5 3-3.5s3 1.5 3 3.5"/>',
+ party:'<path d="M4 20 9 7l8 8-13 5z"/><path d="M14 4v2M19 9h2M17 6l1.5-1.5M12 2.5l.5 1"/>',
+ palm:'<path d="M12 21c0-5 .5-9 2-12"/><path d="M14 9c-2-3-6-3-8-1 3-.5 5 .5 6 2"/><path d="M14 9c1-3.5 5-4.5 7-2.5-3 0-5 1-6 3"/><path d="M14 9c3 0 5 2 5 5-1.5-2-3.5-3-5-3"/><path d="M5 21h14"/>',
+ hammock:'<path d="M3 5v15M21 5v15M3 9c4 6 14 6 18 0"/>',
+ mountain:'<path d="M2 20 9 7l4 6 3-4 6 11H2z"/>',
+ jet:'<path d="M3 15h13l5-3-3-1-4 1-3-3H7l-2 3H3v3z"/><path d="M2 19c2 0 2-1 4-1s2 1 4 1 2-1 4-1 2 1 4 1 2-1 4-1"/>',
+ compass:'<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2z"/>',
+ piggy:'<path d="M19 11c0-3.3-3.1-6-7-6S5 7.7 5 11c0 1.7.8 3.2 2 4.3V19h3v-2h4v2h3v-3.7c.7-.6 1.2-1.3 1.6-2.1L21 13v-3l-2-.5"/><circle cx="15.5" cy="10" r=".8"/><path d="M10 7.5h3"/>',
+ bag:'<rect x="4" y="7" width="16" height="13" rx="2"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M4 13h16"/>',
+ map:'<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/>',
+ cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+ star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9L12 3z"/>',
+ moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>', minus:'<path d="M5 12h14"/>',
+ x:'<path d="M6 6l12 12M18 6 6 18"/>',
+ search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+ spark:'<path d="M12 3c.6 4.2 2.8 6.4 7 7-4.2.6-6.4 2.8-7 7-.6-4.2-2.8-6.4-7-7 4.2-.6 6.4-2.8 7-7z"/><path d="M19 3v4M17 5h4"/>',
+ free:'<path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+ shield:'<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3z"/><path d="M12 8v5M12 16v.5"/>',
+ ice:'<path d="M8 13V8a4 4 0 0 1 8 0v5a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2z"/><path d="M12 15v6"/>',
+ boat:'<path d="M3 15h18l-3 5H6l-3-5z"/><path d="M12 3v12M12 4l6 9h-6"/>',
+ clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 0 1-4 0v-.1a1.6 1.6 0 0 0-2.7-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 3.1 14H3a2 2 0 0 1 0-4h.1a1.6 1.6 0 0 0 1.1-2.7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 9.8 3.1V3a2 2 0 0 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0 1.1 2.7H21a2 2 0 0 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1.3z"/>',
+ arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+ auto:'<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/>'
+};
+const ic=(n,s=22)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]||''}</svg>`;
+const TONE={sun:'background:var(--sun-soft);color:#B07800',coral:'background:var(--coral-soft);color:var(--coral-d)',sea:'background:var(--ocean-soft);color:var(--ocean-d)',mint:'background:var(--mint-soft);color:var(--mint)',grape:'background:#ECE7FF;color:var(--grape)'};
+
+/* ---------- ilustrações ---------- */
+let sN=0;
+function wv(y,amp,len,fill,cls,op){let d=`M0 ${y}`;for(let x=0;x<800;x+=len)d+=` q${len/4} ${-amp} ${len/2} 0 q${len/4} ${amp} ${len/2} 0`;return`<path class="${cls}" d="${d} V240 H0Z" fill="${fill}" ${op?`opacity="${op}"`:''}/>`}
+const palm=(x,y,s)=>`<g transform="translate(${x} ${y}) scale(${s})"><g class="sway"><path d="M0 0 C3 -25 8 -45 14 -62" stroke="#8B5A2B" stroke-width="5" fill="none" stroke-linecap="round"/><g fill="var(--hill2)"><path d="M14 -62C0 -70-18 -66-28 -54C-14 -60 0 -60 14 -62Z"/><path d="M14 -62C26 -74 44 -72 52 -60C38 -64 26 -64 14 -62Z"/><path d="M14 -62C8 -78 16 -90 30 -92C20 -84 16 -74 14 -62Z"/><path d="M14 -62C30 -62 42 -50 44 -38C34 -50 24 -56 14 -62Z"/><path d="M14 -62C0 -58-10 -46-12 -36C-2 -48 6 -56 14 -62Z"/></g><circle cx="12" cy="-60" r="3.2" fill="#6B4423"/></g></g>`;
+const guarda=(x,y,c)=>`<g transform="translate(${x} ${y})"><path d="M0 0V-36" stroke="#6B4423" stroke-width="2.5"/><path d="M-24 -34A24 15 0 0 1 24 -34Z" fill="${c}"/><path d="M-8 -34A8 15 0 0 1 8 -34Z" fill="#fff" opacity=".85"/><rect x="6" y="-4" width="26" height="7" rx="2" fill="var(--ocean)" opacity=".85" transform="rotate(-6)"/></g>`;
+const nuvens=()=>`<g class="cl"><g fill="var(--cloud)" opacity=".92"><ellipse cx="62" cy="52" rx="26" ry="9"/><ellipse cx="78" cy="45" rx="15" ry="10"/><ellipse cx="54" cy="47" rx="11" ry="7"/></g></g><g class="cl2"><g fill="var(--cloud)" opacity=".8"><ellipse cx="200" cy="34" rx="20" ry="7"/><ellipse cx="212" cy="29" rx="11" ry="7"/></g></g><path d="M150 70q4-4 8 0q4-4 8 0M170 60q3-3 6 0q3-3 6 0" stroke="var(--ink)" stroke-width="1.4" fill="none" opacity=".45"/>`;
+const jetski=()=>`<g transform="translate(0 176)"><g class="jet"><g class="bob"><path d="M-30 6q10-4 22 0" stroke="#fff" stroke-width="2" fill="none" opacity=".8"/><path d="M0 8L34 8L44 2L36 0L24 2L18-4L8-4L2 2Z" fill="var(--coral)"/><path d="M14 -4L20 -14" stroke="#13213C" stroke-width="3" stroke-linecap="round"/><circle cx="21" cy="-17" r="3.5" fill="#13213C"/><path d="M20 -12L28 -8" stroke="#13213C" stroke-width="2.5" stroke-linecap="round"/></g></g></g>`;
+const escuna=(x,y)=>`<g transform="translate(${x} ${y})"><g class="bob"><path d="M0 0L64 0L55 13L8 13Z" fill="#fff"/><path d="M0 0L64 0L62 3L2 3Z" fill="var(--coral)"/><path d="M30 0V-44" stroke="#6B4423" stroke-width="2.5"/><path d="M31 -42L31 -6L54 -6Z" fill="var(--sun)"/><path d="M29 -38L29 -8L10 -8Z" fill="#fff"/></g></g>`;
+const golfinho=(x,y)=>`<g transform="translate(${x} ${y})"><g class="bob"><path d="M0 0C10 -18 32 -18 44 -2L38 -3C28 -12 14 -12 6 -1Z" fill="var(--sea3)"/><path d="M20 -13L24 -22L28 -12Z" fill="var(--sea3)"/></g></g>`;
+const farol=(x,y)=>`<g transform="translate(${x} ${y})"><path d="M-30 -66L0 -60L30 -66L0 -54Z" fill="var(--sunc)" class="glow" opacity=".35"/><path d="M-7 0L-5 -50H5L7 0Z" fill="#fff"/><path d="M-6.4 -14H6.4L6 -24H-6Z M-5.6 -34H5.6L5.3 -42H-5.3Z" fill="var(--coral)"/><rect x="-6" y="-58" width="12" height="8" rx="1" fill="var(--sunc)"/><path d="M-8 -58H8L0 -66Z" fill="var(--coral)"/></g>`;
+const araucaria=(x,y,s)=>`<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 0V-50" stroke="#5A3A22" stroke-width="3"/><g fill="var(--hill2)"><path d="M-22 -46Q0 -60 22 -46Q0 -50-22 -46Z"/><path d="M-17 -36Q0 -47 17 -36Q0 -40-17 -36Z"/><path d="M-12 -27Q0 -35 12 -27Q0 -30-12 -27Z"/></g></g>`;
+const ponte=()=>`<g stroke="#fff" fill="none" opacity=".95"><path d="M8 146H128" stroke-width="2.5"/><path d="M40 146V116M96 146V116" stroke-width="3"/><path d="M8 146Q40 112 40 116Q68 140 96 116Q96 112 128 146" stroke-width="1.6"/></g>`;
+function scene(dest,extra){const id='sk'+(++sN);let back='',front='';
+ if(dest==='floripa'){back=`<path d="M110 152C160 96 236 96 292 152Z" fill="var(--hill1)"/><path d="M262 152C300 120 352 118 400 136V152Z" fill="var(--hill2)"/>${ponte()}`;front=`${palm(62,226,1)}${guarda(310,224,'var(--coral)')}`}
+ else if(dest==='litsul'){back=`<path d="M0 148C120 141 280 141 400 146V154H0Z" fill="var(--hill2)"/>${[30,62,90,250,290,330,360].map((x,i)=>`<circle cx="${x}" cy="${145-i%2*2}" r="${7+i%3*2}" fill="var(--hill1)"/>`).join('')}`;front=`${golfinho(210,182)}${palm(352,226,.9)}${guarda(110,224,'var(--sun)')}`}
+ else if(dest==='litnorte'){back=`<path d="M0 152L36 112L72 130L130 66L190 122L236 92L300 150L400 152Z" fill="var(--hill1)"/><path d="M0 152L50 132L96 152Z M220 152L280 124L340 152Z" fill="var(--hill2)"/>`;front=`${escuna(250,166)}${guarda(90,224,'var(--coral)')}`}
+ else{back=`<path d="M0 152L46 108L86 128L136 94L196 152Z" fill="var(--hill2)" opacity=".75"/><path d="M210 152C260 112 336 104 400 120V152Z" fill="var(--hill1)"/>${araucaria(40,152,.9)}${araucaria(74,150,.7)}${araucaria(118,150,.8)}${farol(296,118)}`;front=`${guarda(150,224,'var(--coral)')}${palm(60,228,.8)}`}
+ return`<svg class="scene" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Ilustração de ${esc(DEST[dest].nome)}"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--sky1)"/><stop offset="1" style="stop-color:var(--sky2)"/></linearGradient></defs><rect width="400" height="240" fill="url(#${id})"/><circle cx="318" cy="62" r="40" fill="var(--sunc)" class="glow" opacity=".35"/><circle cx="318" cy="62" r="24" fill="var(--sunc)"/>${nuvens()}${back}${wv(152,4,100,'var(--sea1)','w1')}${wv(166,5,100,'var(--sea2)','w2')}${dest==='floripa'?jetski():''}${wv(186,4,50,'var(--sea3)','w3','.9')}<path d="M0 212C90 196 200 222 300 206C340 200 380 204 400 206V240H0Z" fill="var(--sand)"/><path d="M0 212C90 196 200 222 300 206C340 200 380 204 400 206" stroke="#fff" stroke-width="2.5" fill="none" opacity=".7"/><path d="M0 230C120 222 260 236 400 226V240H0Z" fill="var(--sand2)" opacity=".6"/>${front}${extra||''}</svg>`}
+
+/* ---------- pacotes e apelidos ---------- */
+const SHORT={floripa:'Floripa',litsul:'Ilha Comprida',litnorte:'Ubatuba',regiao:'Litoral do PR'};
+const NICK={economico:'Pé na areia',intermediario:'Água de coco',premium:'Lagosta no prato'};
+const TICON={economico:'tent',intermediario:'house',premium:'hotel'};
+const APEL={aventura:'Raiz',romantica:'a Dois',amigos:'da Galera',familia:'em Família',relax:'Zen'};
+const HICON={hotel:'hotel',airbnb:'house',camping:'tent',gratis:'free'};
+const TICONT={carro:'car',onibus:'bus',carona:'ride'};
+const PACOTES=[
+ {id:'floripa-raiz',nome:'Floripa Raiz',sub:'Camping, carona e jet ski',dest:'floripa',tipo:'aventura',hosp:'camping',transporte:'carona',tier:'economico',jet:true,badge:'Mais pedido'},
+ {id:'floripa-dois',nome:'Floripa a Dois',sub:'Apê com vista, ostras e pôr do sol',dest:'floripa',tipo:'romantica',hosp:'airbnb',transporte:'carro',tier:'intermediario',jet:true},
+ {id:'floripa-galera',nome:'Floripa da Galera',sub:'Casa dividida, sandboard e balada',dest:'floripa',tipo:'amigos',hosp:'airbnb',transporte:'carona',tier:'economico',jet:true},
+ {id:'floripa-lagosta',nome:'Floripa Lagosta',sub:'Hotel 5★, jet ski 1 h e Ilha do Campeche',dest:'floripa',tipo:'romantica',hosp:'hotel',transporte:'carro',tier:'premium',jet:true,extra:{jet60:1,jet30:0},badge:'Premium'},
+ {id:'mel-pe-na-areia',nome:'Ilha do Mel Pé na Areia',sub:'Sem carros, farol e golfinhos',dest:'regiao',tipo:'relax',hosp:'camping',transporte:'onibus',tier:'economico',jet:false},
+ {id:'modo-miojo',nome:'Modo Miojo',sub:'Camping grátis e carona: quase de graça',dest:'regiao',tipo:'aventura',hosp:'gratis',transporte:'carona',tier:'economico',jet:false,badge:'Mais barato'},
+ {id:'ubatuba-familia',nome:'Ubatuba em Família',sub:'Escuna, Tamar e cachoeira',dest:'litnorte',tipo:'familia',hosp:'airbnb',transporte:'carro',tier:'intermediario',jet:false},
+ {id:'ilha-comprida-zen',nome:'Ilha Comprida Zen',sub:'70 km de praia e golfinhos',dest:'litsul',tipo:'relax',hosp:'hotel',transporte:'carro',tier:'economico',jet:false}
+];
+function comOverride(o,fn){const old={};for(const k in o)old[k]=st[k];Object.assign(st,o);try{return fn()}finally{Object.assign(st,old)}}
+function pkgState(p){const a=Object.assign(defAtiv(p.dest,p.tipo,p.jet),p.extra||{});for(const k in a)if(!a[k])delete a[k];return{destino:p.dest,tipo:p.tipo,hosp:p.hosp,transporte:p.transporte,tier:p.tier,querJet:p.jet,ativ:a}}
+const pkgCalc=p=>comOverride(pkgState(p),()=>calc(p.dest,p.tier));
+function melhorNivel(did){for(const t of ['premium','intermediario','economico'])if(calc(did,t).total<=st.teto)return t;return'economico'}
+
+/* ---------- rotas ---------- */
+const ROUTES=[['explorar','Explorar','compass'],['plano','Plano','map'],['roteiro','Roteiro','cal'],['cofre','Cofre','piggy'],['mala','Mala','bag']];
+const ALL=[...ROUTES.map(r=>r[0]),'ajustes'];
+let rota=(location.hash||'').slice(1);if(!ALL.includes(rota))rota='explorar';
+let subPlano='orc',subMala='listas',catSel='todos',diaSel=null;
+
+function rChrome(){
+ $('#topnav').innerHTML=ROUTES.map(([id,n])=>`<button data-go="${id}" ${id===rota?'aria-current="page"':''}>${n}</button>`).join('');
+ $('#bottomnav').innerHTML=ROUTES.map(([id,n,i])=>`<button data-go="${id}" ${id===rota?'aria-current="page"':''}>${ic(i,23)}${n}</button>`).join('');
+ const a=pd(st.inicio),b=pd(st.fim);
+ $('#pill').innerHTML=`<span class="t"><b>${esc(SHORT[st.destino])}</b><span class="s">${a.getDate()} ${MES[a.getMonth()]} a ${b.getDate()} ${MES[b.getMonth()]} · ${P()} ${P()>1?'pessoas':'pessoa'}</span></span><span class="go">${ic('search',17)}</span>`;
+}
+function render(){aplicarTema();rChrome();$('#view').innerHTML=V2[rota]();}
+function go(r,keepScroll){rota=r;if(location.hash!=='#'+r)history.replaceState(null,'','#'+r);render();if(!keepScroll)window.scrollTo({top:0,behavior:'instant'})}
+window.addEventListener('hashchange',()=>{const r=location.hash.slice(1);if(ALL.includes(r)&&r!==rota){rota=r;render();window.scrollTo({top:0})}});
+
+/* ---------- componentes ---------- */
+function pkgCard(p){const C=pkgCalc(p);const pp=C.total/P();
+ return`<div class="pkg" role="button" tabindex="0" data-pkg="${p.id}" aria-label="Ver pacote ${esc(p.nome)}"><div class="thumb">${scene(p.dest)}${p.badge?`<span class="badge">${p.badge}</span>`:''}<button class="fav" data-fav="${p.id}" aria-pressed="${st.fav[p.id]?'true':'false'}" aria-label="Favoritar">${ic('heart',18)}</button></div>
+ <div class="row between" style="gap:6px;align-items:flex-start"><h3>${esc(p.nome)}</h3><span class="chip sun">${NICK[p.tier]}</span></div>
+ <p class="small muted">${esc(p.sub)} · ${noites()} noites</p>
+ <p class="price"><b class="num">${brl(pp)}</b> <span class="muted small">por pessoa</span> <span class="muted tiny">· total ${brl(C.total)}</span></p></div>`}
+function tierCard(C){const pc=porCat(C);const cabe=C.total<=st.teto;const sel=C.tier===st.tier;
+ return`<div class="card tier t${C.ti} ${sel?'sel':''}"><div class="band"><div><div class="lvl">${TN[C.tier]}</div><div class="nick">${NICK[C.tier]}</div></div><div class="bico">${ic(TICON[C.tier],26)}</div></div>
+ <div class="body"><div><div class="total num">${brl(C.total)}</div><p class="small muted num">${brl(C.total/P())} por pessoa · ${brl(C.total/C.days)} por dia</p></div>
+ <div class="row"><span class="chip sea">${ic(HICON[C.ht],15)} ${HOSPN[C.ht][C.ti]}</span><span class="chip ${cabe?'mint':'coral'}">${cabe?'Cabe no bolso':'Passa '+brl(C.total-st.teto)}</span></div>
+ <div class="sbar" aria-hidden="true">${Object.entries(pc).map(([k,v])=>`<i style="width:${v/C.total*100}%;background:${CATC2[k]}"></i>`).join('')}</div>
+ <details class="more"><summary>Ver todos os custos</summary><div class="lines">${Object.values(C.L).filter(x=>x.v>0).map(x=>`<div class="line"><span>${x.n}<small>${esc(x.d)}</small></span><b class="num">${brl(x.v)}</b></div>`).join('')}</div></details>
+ ${sel?`<span class="chip coral" style="align-self:flex-start">${ic('check',14)} Seu plano</span>`:`<button class="btn cta block" data-act="tier" data-v="${C.tier}">Quero esse</button>`}</div></div>`}
+const CATC2={transporte:'var(--ocean)',hosp:'var(--sun)',comida:'var(--mint)',passeios:'var(--coral)',extras:'var(--grape)'};
+const legenda2=()=>`<div class="legend">${Object.entries(CAT).map(([k,n])=>`<span><i style="background:${CATC2[k]}"></i>${n}</span>`).join('')}</div>`;
+function jar(pct){const h=Math.max(0,Math.min(100,pct));const y=200-h*1.6;
+ return`<svg class="jar" viewBox="0 0 150 210" role="img" aria-label="Cofre ${Math.round(h)}% cheio"><defs><clipPath id="jc"><path d="M32 40Q20 44 20 62V182Q20 200 40 200H110Q130 200 130 182V62Q130 44 118 40Z"/></clipPath></defs>
+ <path d="M32 40Q20 44 20 62V182Q20 200 40 200H110Q130 200 130 182V62Q130 44 118 40Z" fill="var(--bg2)"/>
+ <g clip-path="url(#jc)"><g class="water" style="transform:translateY(${y}px)"><g class="scene"><path class="w1" d="M0 6${' q12.5 -6 25 0 q12.5 6 25 0'.repeat(14)} V220 H0Z" fill="var(--ocean)" opacity=".55"/><path class="w3" d="M0 10${' q12.5 -5 25 0 q12.5 5 25 0'.repeat(14)} V220 H0Z" fill="var(--ocean)"/></g></g>
+ ${h>0?`<g fill="var(--sun)" stroke="#D89A10" stroke-width="1.5"><circle cx="55" cy="186" r="9"/><circle cx="78" cy="190" r="9"/><circle cx="98" cy="184" r="9"/></g>`:''}</g>
+ <path d="M32 40Q20 44 20 62V182Q20 200 40 200H110Q130 200 130 182V62Q130 44 118 40Z" fill="none" stroke="var(--ink)" stroke-width="3" opacity=".75"/>
+ <rect x="28" y="22" width="94" height="20" rx="6" fill="var(--coral)"/><rect x="62" y="26" width="26" height="4" rx="2" fill="#fff" opacity=".8"/>
+ <text x="75" y="125" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" font-size="30" fill="var(--ink)">${Math.round(h)}%</text></svg>`}
+
+/* ---------- telas ---------- */
+const V2={};
+V2.explorar=()=>{const D=DEST[st.destino];const{C,meta}=plano();const falta=diff(hoje(),pd(st.inicio));const guard=st.depositos.reduce((s,d)=>s+d.v,0);
+ const pre=preViagem().filter(x=>!st.checks[x.id])[0];
+ const cats=[['todos','Todos','sun'],['aventura','Aventura','jet'],['romantica','A dois','heart'],['amigos','Galera','party'],['familia','Família','family'],['relax','Descanso','hammock'],['economico','Baratinho','piggy']];
+ const lista=PACOTES.filter(p=>catSel==='todos'||p.tipo===catSel||(catSel==='economico'&&p.tier==='economico'));
+ return`<section class="hero">${scene(st.destino)}<div class="hero-c">
+  <div style="display:flex;flex-direction:column;gap:10px"><span class="kicker">${st.quiz&&st.pacote?esc(st.pacote):'Férias à vista'}</span><h1>${st.quiz?`Bora pra ${esc(SHORT[st.destino])}?`:'Pra onde a gente vai?'}</h1><p class="lead">${st.quiz?esc(D.resumo):'Responda 8 perguntas rapidinhas e eu monto um pacote completo, do seu jeito e no seu bolso.'}</p></div>
+  <div class="row between" style="align-items:flex-end"><span class="count">${falta>0?`<b class="num">${falta}</b> dias pra areia`:falta===0?'<b>Hoje!</b> Boa viagem':'<b>Em viagem</b>'}</span><div class="hero-actions"><button class="btn cta" data-act="quiz">${ic('spark',18)} ${st.quiz?'Refazer o quiz':'Montar minha viagem'}</button></div></div></div></section>
+ <div class="grid g3">
+  <button class="card" style="text-align:left;cursor:pointer" data-go="plano"><span class="kicker">Seu plano</span><div class="row between"><div><div class="disp" style="font-size:1.6rem" >${brl(meta)}</div><span class="small muted">${NICK[st.tier]} · ${brl(meta/P())} por pessoa</span></div><span class="tico tag-praia">${ic(HICON[C.ht],22)}</span></div><span class="chip ${meta<=st.teto?'mint':'coral'}" style="align-self:flex-start">${meta<=st.teto?'Sobram '+brl(st.teto-meta):'Passa '+brl(meta-st.teto)+' do teto'}</span></button>
+  <button class="card" style="text-align:left;cursor:pointer" data-go="cofre"><span class="kicker">Cofre</span><div class="row between"><div><div class="disp" style="font-size:1.6rem">${brl(guard)}</div><span class="small muted">de ${brl(meta)}</span></div><span class="tico tag-viagem">${ic('piggy',22)}</span></div><div class="bar"><i style="width:${Math.min(100,meta?guard/meta*100:0)}%"></i></div></button>
+  <button class="card" style="text-align:left;cursor:pointer" data-go="mala"><span class="kicker">Próximo passo</span><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><span class="tico tag-passeio">${ic('clock',22)}</span><div>${pre?`<b>${esc(pre.t)}</b><br><span class="small muted">até ${fd(pre.d)}</span>`:'<b>Tudo pronto!</b><br><span class="small muted">Agora é só curtir</span>'}</div></div></button>
+ </div>
+ <section class="sec" id="pacotes"><div class="sec-h"><div><span class="kicker">Prontos pra usar</span><h2>Pacotes que a gente montou</h2><p class="muted small">Preços para o seu grupo e as suas datas. Toque para ver tudo que está incluído.</p></div></div>
+  <div class="cats" role="toolbar" aria-label="Filtrar pacotes">${cats.map(([k,n,i])=>`<button class="cat" data-cat="${k}" aria-pressed="${catSel===k}">${ic(i,24)}${n}</button>`).join('')}</div>
+  <div class="pkgs">${lista.map(pkgCard).join('')||'<p class="muted">Nenhum pacote nesse filtro ainda.</p>'}</div></section>
+ <section class="sec"><div class="sec-h"><div><span class="kicker">Ou escolha você</span><h2>Destinos</h2></div></div>
+  <div class="hscroll">${ORDEM.map(id=>{const c=comOverride({destino:id,ativ:defAtiv(id,st.tipo,st.querJet)},()=>calc(id,'economico'));return`<button class="dcard" data-act="dest" data-v="${id}" aria-pressed="${st.destino===id}"><div class="thumb">${scene(id)}</div><div class="in"><b>${esc(DEST[id].nome)}</b><span class="small muted">${esc(DEST[id].curto)}</span><span class="small">a partir de <b class="num">${brl(c.total/P())}</b> por pessoa</span></div></button>`}).join('')}</div></section>`};
+
+V2.plano=()=>{const D=DEST[st.destino];
+ const subs=[['orc','Orçamento'],['noites','Noite a noite'],['passeios','Passeios'],['onde','Onde ficar'],['comparar','Comparar destinos']];
+ let body='';
+ if(subPlano==='noites')body=vNoites();
+ else if(subPlano==='orc')body=`${legenda2()}<div class="tiers">${TIERS.map(t=>tierCard(calc(st.destino,t))).join('')}</div><p class="small muted">Valores de alta temporada com ida e volta, hospedagem, comida, passeios e 8% de reserva. Itens com a etiqueta <span class="est">estimado</span> vêm de médias de mercado.</p>`;
+ else if(subPlano==='passeios')body=`<div class="card"><div class="row between"><div><h3>Passeios em ${esc(SHORT[st.destino])}</h3><p class="small muted">Use + e − para colocar no roteiro. O orçamento atualiza na hora.</p></div><button class="btn sm" data-act="sugerir">${ic('spark',16)} Sugerir pelo estilo</button></div>${D.ativ.map(a=>{const q=st.ativ[a.id]||0;const p=P();const un=a.u==='jet'?`${brl(a.p)} por jet (${Math.ceil(p/2)} jet${Math.ceil(p/2)>1?'s':''})`:a.p?`${brl(a.p)} por pessoa`:'Grátis';const icn=a.id.startsWith('jet')?'jet':a.per==='noite'?'moon':/trilha|farol|anhangava|cachoeira/i.test(a.n)?'mountain':/barco|escuna|golfinho|travessia|campeche/i.test(a.n)?'boat':'star';
+  return`<div class="act"><span class="tico ${q?'tag-passeio':'tag-livre'}">${ic(icn,22)}</span><div><b>${esc(a.n)}</b> ${a.est?'<span class="est">estimado</span>':''}<br><span class="small muted">${un} · ${esc(a.onde)}</span>${a.nota?`<br><span class="tiny muted">${esc(a.nota)}</span>`:''}</div><div class="stepper"><button data-act="aq" data-id="${a.id}" data-d="-1" aria-label="Menos">${ic('minus',16)}</button><span class="num">${q}</span><button data-act="aq" data-id="${a.id}" data-d="1" aria-label="Mais">${ic('plus',16)}</button></div></div>`}).join('')}</div>`;
+ else if(subPlano==='onde'){const p=P(),N=noites(),nP=st.destino==='regiao'?Math.min(N,D.noitesFora):N;
+  const ab=`https://www.airbnb.com.br/s/${encodeURIComponent(D.busca)}/homes?checkin=${st.inicio}&checkout=${st.fim}&adults=${p}`;const bk=`https://www.booking.com/searchresults.pt-br.html?ss=${encodeURIComponent(D.busca)}&checkin=${st.inicio}&checkout=${st.fim}&group_adults=${p}`;
+  body=`<div class="row"><a class="btn sm" href="${ab}" target="_blank" rel="noopener">${ic('house',16)} Buscar no Airbnb</a><a class="btn sm" href="${bk}" target="_blank" rel="noopener">${ic('hotel',16)} Buscar no Booking</a></div>
+  <div class="tbl"><table><thead><tr><th>Tipo</th><th class="n">Pé na areia</th><th class="n">Água de coco</th><th class="n">Lagosta</th></tr></thead><tbody>${['gratis','camping','airbnb','hotel'].map(t=>`<tr class="${hospTipo(st.tier)===t?'cur':''}"><td><b>${HOSPT[t]}</b></td>${[0,1,2].map(ti=>{const v=hospNoite(D,t,ti,p);return`<td class="n">${brl(v*nP)}<br><span class="tiny muted">${HOSPN[t][ti]}</span></td>`}).join('')}</tr>`).join('')}</tbody></table></div>
+  <h3>Bairros e regiões</h3><div class="grid g2">${D.zonas.map(z=>`<div class="card"><div class="row between"><b>${esc(z.n)}</b><a class="btn sm" href="${maps(z.q)}" target="_blank" rel="noopener">${ic('map',15)} Mapa</a></div><span class="small muted">${esc(z.b)}</span><p class="small"><b style="color:var(--mint)">A favor:</b> ${esc(z.p)}</p><p class="small"><b style="color:var(--coral-d)">Contra:</b> ${esc(z.c)}</p></div>`).join('')}</div>
+  <h3>Campings</h3><div class="grid g3">${D.campings.map(c=>`<div class="card"><div class="row" style="flex-wrap:nowrap"><span class="tico tag-base">${ic('tent',22)}</span><b>${esc(c.n)}</b></div><span class="chip sun" style="align-self:flex-start">${esc(c.p)}</span><p class="small">${esc(c.e)}</p><a class="btn sm" style="align-self:flex-start" href="${maps(c.q)}" target="_blank" rel="noopener">${ic('map',15)} Abrir no mapa</a></div>`).join('')}</div>
+  <h3>Camping de graça</h3><div class="grid g3">${D.gratisOp.map(c=>`<div class="card"><div class="row" style="flex-wrap:nowrap"><span class="tico tag-praia">${ic('free',22)}</span><b>${esc(c.n)}</b></div><span class="chip mint" style="align-self:flex-start">${esc(c.t)}</span><p class="small">${esc(c.e)}</p><div class="row">${c.q?`<a class="btn sm" href="${maps(c.q)}" target="_blank" rel="noopener">${ic('map',15)} Mapa</a>`:''}${c.l?`<a class="btn sm" href="${c.l}" target="_blank" rel="noopener">Saiba mais</a>`:''}</div></div>`).join('')}</div>
+  <div class="note">${ic('shield',22)}<span><b>Acampar de graça com segurança.</b> ${esc(D.gratis)} Vá em grupo, não deixe nada de valor na barraca, leve água de sobra, traga todo o lixo de volta e avise alguém de onde vai dormir.</span></div>`}
+ else{body=`<div class="tbl"><table><thead><tr><th>Destino</th><th class="n">Pé na areia</th><th class="n">Água de coco</th><th class="n">Lagosta</th><th></th></tr></thead><tbody>${ORDEM.map(id=>{const cs=comOverride({destino:id,ativ:id===st.destino?st.ativ:defAtiv(id,st.tipo,st.querJet)},()=>TIERS.map(t=>calc(id,t)));return`<tr class="${id===st.destino?'cur':''}"><td><b>${esc(DEST[id].nome)}</b><br><span class="tiny muted">${esc(DEST[id].curto)}</span></td>${cs.map(c=>`<td class="n">${brl(c.total)}<br><span class="tiny muted">${brl(c.total/P())}/pessoa</span></td>`).join('')}<td>${id===st.destino?'<span class="chip coral">Atual</span>':`<button class="btn sm" data-act="dest" data-v="${id}">Usar</button>`}</td></tr>`}).join('')}</tbody></table></div><p class="small muted">Mesmo grupo, datas e transporte. Curitiba e região conta ${DEST.regiao.noitesFora} noites fora de casa.</p>`}
+ return`<div class="sec-h"><div><span class="kicker">${esc(D.nome)} · ${noites()} noites · ${grupoLabel()}</span><h2>Seu plano</h2></div><button class="btn sm" data-go="ajustes">${ic('gear',16)} Ajustar viagem</button></div>
+ <div class="seg2" role="tablist">${subs.map(([k,n])=>`<button data-sub="${k}" aria-pressed="${subPlano===k}">${n}</button>`).join('')}</div>${body}`};
+
+
+const NTIPOS=[['gratis','Grátis','free'],['camping','Camping','tent'],['airbnb','Airbnb','house'],['hotel','Hotel','hotel'],['casa','Casa','users']];
+const NCOR={gratis:'var(--sun)',camping:'var(--mint)',airbnb:'var(--ocean)',hotel:'var(--coral)',casa:'var(--grape)'};
+function vNoites(){const C=calc(st.destino,st.tier);const NL=C.NL;const cont={};NL.forEach(x=>cont[x.t]=(cont[x.t]||0)+1);
+ return`<div class="card"><div class="row between"><div><span class="kicker">Hospedagem no nível ${NICK[st.tier]}</span><div class="disp num" style="font-size:2rem">${brl(C.L.hosp.v)}</div><span class="small muted">${NL.length} noites · ${brl(C.L.hosp.v/NL.length)} por noite em média, para o grupo</span></div></div>
+  <div class="nstrip" aria-hidden="true">${NL.map(x=>`<i style="background:${NCOR[x.t]}" title="${x.d}"></i>`).join('')}</div>
+  <div class="legend">${NTIPOS.filter(([k])=>cont[k]).map(([k,n])=>`<span><i style="background:${NCOR[k]}"></i>${cont[k]} ${k==='casa'?'em casa':n.toLowerCase()}</span>`).join('')}</div>
+  <p class="small muted">Escolha onde dorme em cada noite. Sem valor digitado, uso a estimativa do destino. Digitou o valor que cotou? Ele vale para todos os níveis.</p>
+  <div class="row"><span class="small" style="font-weight:800">Preencher todas:</span>${NTIPOS.map(([k,n,i])=>`<button class="nchip" data-nall="${k}">${ic(i,15)} ${n}</button>`).join('')}<button class="btn ghost sm" data-nall="padrao">Voltar ao padrão</button></div></div>
+ <div class="grid g2">${NL.map((n,i)=>{const d=pd(n.d);const pago=n.t!=='gratis'&&n.t!=='casa';const est=hospNoite(DEST[st.destino],n.t,tierIdx(st.tier),P());
+  return`<div class="card night" style="border-left:5px solid ${NCOR[n.t]}"><div class="row between" style="flex-wrap:nowrap;align-items:flex-start"><div><span class="kicker" style="color:var(--muted)">${WD[d.getDay()]} · noite ${i+1}</span><div class="disp num" style="font-size:1.45rem">${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}</div></div><div style="text-align:right"><b class="num" style="font-size:1.1rem">${brl(n.v)}</b><br><span class="tiny ${n.custom?'':'muted'}" style="${n.custom?'color:var(--mint);font-weight:800':''}">${n.custom?'valor seu':pago?'estimado':'sem custo'}</span></div></div>
+   <div class="nchips" role="group" aria-label="Tipo de hospedagem">${NTIPOS.map(([k,nm,ico])=>`<button class="nchip" data-nt="${n.d}|${k}" aria-pressed="${n.t===k}">${ic(ico,15)} ${nm}</button>`).join('')}</div>
+   <div class="grid" style="grid-template-columns:${pago?'1.4fr 1fr':'1fr'};gap:8px"><label class="f">Onde<input type="text" id="nn-${n.d}" data-nn="${n.d}" value="${esc(n.n)}" placeholder="${n.t==='gratis'?'Mirante do Caminho do Rei':n.t==='casa'?'Casa da tia':n.t==='camping'?'Camping Barra da Lagoa':'Nome do lugar'}"></label>${pago?`<label class="f">R$ por noite<input type="number" min="0" step="1" inputmode="decimal" id="nv-${n.d}" data-nv="${n.d}" value="${n.custom?n.v:''}" placeholder="${Math.round(est)}"></label>`:''}</div>
+   ${n.manual?`<button class="btn ghost sm" style="align-self:flex-start;padding:0" data-nreset="${n.d}">Voltar ao padrão do plano</button>`:''}</div>`}).join('')}</div>`}
+
+V2.roteiro=()=>{const R=rt();const t=iso(hoje());if(diaSel==null){const i=R.days.findIndex(d=>d.date===t);diaSel=i>=0?i:0}if(diaSel>=R.days.length)diaSel=0;const d=R.days[diaSel];const dt=pd(d.date);const TI={viagem:'car',praia:'wave',passeio:'star',noite:'moon',base:st.hosp==='hotel'?'hotel':'tent',livre:'hammock',custom:'heart'};
+ if(st.transporte==='onibus')TI.viagem='bus';if(st.transporte==='carona')TI.viagem='ride';
+ return`<div class="sec-h"><div><span class="kicker">${esc(SHORT[st.destino])} · ${TIPOS[st.tipo]}</span><h2>Roteiro</h2><p class="small muted">Jet ski logo no começo, pra sobrar dia reserva se ventar.</p><span class="chip sun wrap" style="align-self:flex-start;margin-top:6px">${ic('sun',15)} ${esc(DEST[st.destino].clima)}</span></div><button class="btn sm" data-act="regerar">${ic('spark',16)} Refazer</button></div>
+ <div class="days" role="tablist">${R.days.map((x,i)=>{const y=pd(x.date);return`<button class="dchip" data-day="${i}" aria-pressed="${i===diaSel}"><span class="w">${WD[y.getDay()]}</span><span class="d num">${y.getDate()}</span>${x.date===t?'<span class="dot"></span>':''}</button>`}).join('')}</div>
+ <div class="card"><div class="row between"><div><span class="kicker">Dia ${diaSel+1} de ${R.days.length}</span><h3>${['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'][dt.getDay()]}, ${dt.getDate()} de ${['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'][dt.getMonth()]}</h3></div>${d.date===t?'<span class="chip coral">Hoje</span>':''}</div>
+  <div class="tl">${d.items.map((x,i)=>`<div class="tli ${x.done?'done':''}"><span class="tico tag-${x.tag||'livre'}">${ic(TI[x.tag]||'star',22)}</span><div><span class="h num">${x.h}</span><div class="t">${esc(x.t)}</div>${x.custom?`<button class="btn ghost sm" style="padding:2px 0" data-act="delit" data-v="${diaSel}:${i}">Remover</button>`:''}</div><label class="chk"><input type="checkbox" data-rt="${diaSel}:${i}" ${x.done?'checked':''} aria-label="Feito"></label></div>`).join('')}</div>
+  <details class="more"><summary>${ic('plus',14)} Adicionar compromisso neste dia</summary><form class="grid" data-form="item" style="grid-template-columns:110px 1fr auto;margin-top:10px;align-items:end"><input type="hidden" id="it-d" value="${d.date}"><label class="f">Hora<input type="text" id="it-h" value="12:00" inputmode="numeric"></label><label class="f">O quê<input type="text" id="it-t" required placeholder="Almoço no restaurante X"></label><button class="btn cta" type="submit">Adicionar</button></form></details></div>
+ <div class="note sea">${ic('wave',22)}<span><b>Choveu?</b> Plano B: ${esc(DEST[st.destino].chuva)}.</span></div>`};
+
+V2.cofre=()=>{const{C,E,eco,meta}=plano();const guard=st.depositos.reduce((s,d)=>s+d.v,0);const falta=Math.max(0,meta-guard);const dias=diff(hoje(),pd(st.inicio));const pct=meta?guard/meta*100:0;
+ const R=rt();const idx=R.days.findIndex(d=>d.date===iso(hoje()));const gasto=st.gastos.reduce((s,g)=>s+g.v,0);const pc=porCat(C);const dRest=idx>=0?R.days.length-idx:R.days.length;const gc={};st.gastos.forEach(g=>gc[g.c]=(gc[g.c]||0)+g.v);
+ return`<div class="sec-h"><div><span class="kicker">${NICK[st.tier]} · ${esc(SHORT[st.destino])}</span><h2>Cofre da viagem</h2></div></div>
+ <div class="card"><div class="jarwrap">${jar(pct)}<div class="kpis">
+  <div class="kpi"><span>Meta</span><b class="num">${brl(meta)}</b></div><div class="kpi"><span>Guardado (${Math.round(Math.min(100,pct))}%)</span><b class="num" style="color:var(--ocean-d)">${brl(guard)}</b></div>
+  <div class="kpi"><span>Falta</span><b class="num">${brl(falta)}</b></div><div class="kpi"><span>Sobra do teto</span><b class="num" style="color:${st.teto-meta>=0?'var(--mint)':'var(--coral)'}">${brl(st.teto-meta)}</b></div>
+  <p class="small" style="grid-column:1/-1">${falta<=0?'Meta batida! O que entrar agora é verba livre.':dias>0?`Guarde <b class="num">${brl(falta/Math.max(1,dias/7))}</b> por semana até ${fd(pd(st.inicio))}.`:`Faltam ${brl(falta)}.`}</p></div></div>
+  <form class="grid" data-form="dep" style="grid-template-columns:1fr 1.4fr auto;align-items:end"><label class="f">Valor (R$)<input type="number" id="dep-v" min="1" step="1" required inputmode="decimal"></label><label class="f">De onde veio<input type="text" id="dep-n" placeholder="13º salário"></label><button class="btn cta" type="submit">${ic('plus',16)} Guardar</button></form>
+  ${st.depositos.length?`<details class="more"><summary>Ver ${st.depositos.length} depósito${st.depositos.length>1?'s':''}</summary><div class="lines">${st.depositos.slice().reverse().map((d,i)=>`<div class="line"><span>${esc(d.n||'Depósito')}<small>${d.dt}</small></span><span class="row" style="flex-wrap:nowrap"><b class="num">${brl(d.v)}</b><button class="btn ghost sm" data-act="deldep" data-i="${st.depositos.length-1-i}" aria-label="Apagar">${ic('x',14)}</button></span></div>`).join('')}</div></details>`:''}</div>
+ <div class="grid g2">
+  <div class="card"><div><h3>Como deixar mais barato</h3><p class="small muted">Ligue o que topar. A meta cai na hora.${eco?` Você já economiza <b style="color:var(--mint)">${brl(eco)}</b>.`:''}</p></div>
+   <div>${E.map(e=>`<label class="sw"><input type="checkbox" data-econ="${e.id}" ${st.econ[e.id]?'checked':''}><span style="flex:1"><b>${esc(e.n)}</b><br><span class="small muted">${esc(e.d)}</span></span><span class="save num">−${brl(e.v)}</span></label>`).join('')}</div></div>
+  <div class="card"><div><h3>Para onde vai o dinheiro</h3><p class="small muted">${NICK[st.tier]}, ${brl(C.total)} no total.</p></div>${Object.entries(pc).map(([k,v])=>`<div style="display:flex;flex-direction:column;gap:4px"><div class="row between small"><span>${CAT[k]}</span><span class="num"><b>${brl(v)}</b> · ${Math.round(v/C.total*100)}%</span></div><div class="bar"><i style="width:${v/C.total*100}%;background:${CATC2[k]}"></i></div></div>`).join('')}</div>
+  <div class="card"><div><h3>Na viagem: gastos</h3><p class="small muted">Lance o que gastar e veja quanto ainda pode por dia.</p></div>
+   <div class="kpis"><div class="kpi"><span>Gasto</span><b class="num">${brl(gasto)}</b></div><div class="kpi"><span>Pode gastar por dia</span><b class="num" style="color:var(--mint)">${brl(Math.max(0,meta-gasto)/Math.max(1,dRest))}</b></div></div>
+   <form class="grid" data-form="gasto" style="grid-template-columns:1fr 1fr;align-items:end"><label class="f">Valor (R$)<input type="number" id="g-v" min="0.01" step="0.01" required inputmode="decimal"></label><label class="f">Tipo<select id="g-c">${Object.entries(CAT).map(([k,n])=>`<option value="${k}">${n}</option>`).join('')}</select></label><label class="f" style="grid-column:1/-1">Descrição<input type="text" id="g-d" placeholder="Açaí na Barra da Lagoa"></label><button class="btn sea" type="submit" style="grid-column:1/-1">Lançar gasto</button></form>
+   ${Object.entries(CAT).map(([k,n])=>{const g=gc[k]||0,pl=pc[k]||1;return`<div style="display:flex;flex-direction:column;gap:4px"><div class="row between small"><span>${n}</span><span class="num">${brl(g)} de ${brl(pc[k])}</span></div><div class="bar ${g>pl?'over':''}"><i style="width:${Math.min(100,g/pl*100)}%;background:${g>pl?'var(--coral)':CATC2[k]}"></i></div></div>`}).join('')}
+   ${st.gastos.length?`<details class="more"><summary>Ver ${st.gastos.length} lançamento${st.gastos.length>1?'s':''}</summary><div class="lines">${st.gastos.slice().reverse().map((g,i)=>`<div class="line"><span>${esc(g.d||CAT[g.c])}<small>${CAT[g.c]} · ${g.dt}</small></span><span class="row" style="flex-wrap:nowrap"><b class="num">${brl(g.v)}</b><button class="btn ghost sm" data-act="delg" data-i="${st.gastos.length-1-i}" aria-label="Apagar">${ic('x',14)}</button></span></div>`).join('')}</div></details>`:''}</div></div>`};
+
+V2.mala=()=>{const subs=[['listas','Listas'],['antes','Antes de ir'],['guia','Guia'],['sos','Emergência']];const D=DEST[st.destino],car=st.transporte==='carro';let body='';
+ if(subMala==='listas'){const S=listas();body=`<div class="grid g2">${S.map(s=>{const f=s.i.filter(i=>st.checks[s.id+':'+i]).length;const p=Math.round(f/s.i.length*100);return`<div class="card"><div class="row between" style="flex-wrap:nowrap"><h3>${esc(s.t)}</h3><span class="ring" style="--p:${p}"><span>${f}/${s.i.length}</span></span></div><div>${s.i.map(i=>{const k=s.id+':'+i;return`<label class="chk ${st.checks[k]?'done':''}"><input type="checkbox" data-check="${esc(k)}" ${st.checks[k]?'checked':''}><span class="tx">${esc(i)}</span></label>`}).join('')}</div></div>`}).join('')}</div><button class="btn ghost sm" data-act="limparlistas" style="align-self:flex-start">Desmarcar tudo</button>`}
+ else if(subMala==='antes')body=`<div class="card"><h3>Calendário até a viagem</h3><div class="tl" style="margin-top:6px">${preViagem().map(x=>`<div class="tli ${st.checks[x.id]?'done':''}"><span class="tico ${st.checks[x.id]?'tag-base':'tag-passeio'}">${ic(st.checks[x.id]?'check':'clock',22)}</span><div><span class="h num">${fd(x.d)}</span><div class="t">${esc(x.t)}</div></div><label class="chk"><input type="checkbox" data-check="${x.id}" ${st.checks[x.id]?'checked':''} aria-label="Feito"></label></div>`).join('')}</div></div>`;
+ else if(subMala==='guia')body=`<div class="grid g2">
+  <div class="card"><div class="row"><span class="tico tag-viagem">${ic(TICONT[st.transporte],22)}</span><h3>Como chegar</h3></div><ul class="cl small">${st.transporte==='carona'?`<li>De carona: ${esc(D.tempoCarro)}. Reserve com 2 semanas e prefira motorista bem avaliado.</li><li>Combine o ponto de encontro e o tamanho da mala. Tenha o ônibus como plano B.</li>`:car?`<li>De carro: ${esc(D.tempoCarro)}. Saia antes das 6h.</li><li>Combustível de ida e volta: cerca de <b class="num">${brl((D.km*2+(D.kmExtra||0))/st.kml*st.gas)}</b>.</li>`:`<li>De ônibus: ${esc(D.tempoBus)}. Compre com 30 dias de antecedência.</li>`}${D.taxaNota?`<li>${esc(D.taxaNota)}</li>`:''}<li>Chegue com luz do dia. Em janeiro escurece perto das 20h.</li><li>Baixe os mapas offline: trilhas e praias isoladas ficam sem sinal.</li></ul></div>
+  <div class="card"><div class="row"><span class="tico tag-passeio">${ic('jet',22)}</span><h3>Jet ski</h3></div><ul class="cl small"><li>Pilotar sozinho exige habilitação de motonauta (CHA) e 18 anos.</li><li>Sem habilitação, vá no passeio com marinheiro habilitado.</li><li>Colete é obrigatório, e a chave de segurança (corta-motor) fica presa ao pulso de quem pilota.</li><li>Pergunte se combustível e fotos estão inclusos.</li><li>Reserve de manhã: venta mais à tarde.</li><li>Até 2 pessoas por jet. Dividir em dupla corta o custo pela metade.</li></ul></div>
+  <div class="card"><div class="row"><span class="tico tag-base">${ic('tent',22)}</span><h3>Camping passo a passo</h3></div><ol class="cl small"><li>Confirme vaga, energia, água quente e se pode fogareiro.</li><li>Monte a barraca em casa uma vez antes.</li><li>Chão plano, um pouco mais alto, longe de galhos secos.</li><li>Prefira sombra à tarde.</li><li>Lona extra por cima: chove quase todo fim de tarde.</li><li>Comida fechada e longe da barraca.</li><li>Valores sempre com você e cadeado na barraca.</li><li>Silêncio depois das 22h e lixo na lixeira todo dia.</li><li>Desmonte seco. Molhou? Seque em casa no mesmo dia.</li></ol></div>
+  <div class="card"><div class="row"><span class="tico tag-praia">${ic('wave',22)}</span><h3>Mar e sol</h3></div><ul class="cl small"><li>Entre no mar perto do guarda-vidas. Bandeira vermelha: fique na areia.</li><li>Corrente de retorno é a faixa escura e sem ondas. Se te puxar, nade paralelo à praia e levante o braço.</li><li>Protetor a cada 2 h e depois do banho. Sol mais forte das 10h às 16h.</li><li>Trilha: avise alguém, leve a mochila pequena e comece cedo. Volte pelo menos 2 h antes do pôr do sol.</li><li>${esc(D.clima)}.</li></ul><div class="row"><a class="btn sm" href="https://www.marinha.mil.br/chm/tabuas-de-mare" target="_blank" rel="noopener">Tábua de marés</a><a class="btn sm" href="https://portal.inmet.gov.br/" target="_blank" rel="noopener">Previsão</a><a class="btn sm" href="https://www.windy.com/" target="_blank" rel="noopener">Vento</a></div></div>
+  <div class="card"><div class="row"><span class="tico tag-base">${ic('piggy',22)}</span><h3>Dicas que economizam</h3></div><ul class="cl small"><li>Compra grande no primeiro dia, no mercado do bairro e longe da orla.</li><li>Cooler com água e lanche na praia: quiosque em janeiro cobra caro.</li><li>Almoce prato feito em restaurante de bairro e guarde o jantar especial para uma noite.</li><li>Pôr do sol é de graça: mirantes, dunas e trapiches.</li><li>Estacione longe da orla e caminhe. As vagas da beira-mar são as mais caras.</li><li>Jet ski e barco em grupo dá para negociar.</li></ul></div></div>`;
+ else body=`<div class="card"><h3>Números de emergência</h3><div class="emerg"><div><b>192</b><span class="small">SAMU</span></div><div><b>193</b><span class="small">Bombeiros e guarda-vidas</span></div><div><b>190</b><span class="small">Polícia</span></div><div><b>185</b><span class="small">Marinha, emergência no mar</span></div><div><b>199</b><span class="small">Defesa Civil</span></div></div></div>`;
+ const S=listas();const tot=S.reduce((s,x)=>s+x.i.length,0);const ok=S.reduce((s,x)=>s+x.i.filter(i=>st.checks[x.id+':'+i]).length,0);
+ return`<div class="sec-h"><div><span class="kicker">${ok} de ${tot} itens prontos</span><h2>Mala e guia</h2></div></div><div class="bar"><i style="width:${tot?ok/tot*100:0}%;background:var(--mint)"></i></div>
+ <div class="seg2">${subs.map(([k,n])=>`<button data-msub="${k}" aria-pressed="${subMala===k}">${n}</button>`).join('')}</div>${body}`};
+
+V2.ajustes=()=>{const p=st.pessoas;
+ return`<div class="sec-h"><div><span class="kicker">Tudo recalcula na hora</span><h2>Ajustar a viagem</h2></div><button class="btn sm" data-act="quiz">${ic('spark',16)} Fazer o quiz</button></div>
+ <div class="card"><h3>Quando</h3><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))"><label class="f">Saindo de<input type="text" id="f-origem" data-bind="origem" value="${esc(st.origem)}"></label><label class="f">Ida<input type="date" id="f-inicio" data-bind="inicio" value="${st.inicio}"></label><label class="f">Volta<input type="date" id="f-fim" data-bind="fim" value="${st.fim}"></label></div><span class="chip sea" style="align-self:flex-start">${noites()} noites · ${noites()+1} dias</span></div>
+ <div class="card"><h3>Para onde</h3><div class="hscroll">${ORDEM.map(id=>`<button class="dcard" data-act="dest" data-v="${id}" aria-pressed="${st.destino===id}"><div class="thumb">${scene(id)}</div><div class="in"><b>${esc(DEST[id].nome)}</b><span class="small muted">${esc(DEST[id].tempoCarro)}</span></div></button>`).join('')}</div></div>
+ <div class="card"><h3>Quem vai</h3><div style="display:flex;flex-direction:column;gap:10px">${p.map((x,i)=>`<div class="person"><label class="f">Nome<input type="text" id="p-n-${i}" data-p="${i}" data-pf="nome" value="${esc(x.nome)}"></label><label class="f">Idade<input type="number" id="p-i-${i}" min="0" max="110" data-p="${i}" data-pf="idade" value="${x.idade}"></label><button class="btn ghost sm" data-act="delp" data-i="${i}" ${p.length<2?'disabled':''} aria-label="Remover ${esc(x.nome)}">${ic('x',16)}</button></div>`).join('')}</div><button class="btn sm" data-act="addp" style="align-self:flex-start">${ic('plus',16)} Adicionar pessoa</button></div>
+ <div class="card"><h3>Estilo</h3><div class="opts">${Object.entries(TIPOS).map(([k,n])=>`<label><input type="radio" name="tipo" value="${k}" data-bind="tipo" ${st.tipo===k?'checked':''}><span>${n}</span></label>`).join('')}</div><label class="sw"><input type="checkbox" id="f-jet" data-bind="querJet" ${st.querJet?'checked':''}><span><b>Quero andar de jet ski</b></span></label></div>
+ <div class="card"><h3>Transporte</h3><div class="opts">${Object.entries(TRN).map(([k,n])=>`<label><input type="radio" name="tr" value="${k}" data-bind="transporte" ${st.transporte===k?'checked':''}><span>${ic(TICONT[k],17)} ${n}</span></label>`).join('')}</div>
+  ${st.transporte==='carro'?`<div class="grid" style="grid-template-columns:1fr 1fr"><label class="f">Consumo (km/L)<input type="number" step="0.5" id="f-kml" data-bind="kml" value="${st.kml}"></label><label class="f">Gasolina (R$/L)<input type="number" step="0.01" id="f-gas" data-bind="gas" value="${st.gas}"></label></div>`:''}
+  ${st.transporte==='carona'?`<p class="small muted">Base: Curitiba–Florianópolis de R$ 65 a R$ 100. Para ${esc(SHORT[st.destino])}: <b class="num">${brl(caronaTrecho(DEST[st.destino],0))} a ${brl(caronaTrecho(DEST[st.destino],2))}</b> por trecho. <a href="https://www.blablacar.com.br" target="_blank" rel="noopener">Ver caronas</a></p>`:''}</div>
+ <div class="card"><h3>Hospedagem</h3><div class="opts">${[['comparar','Comparar tudo','spark'],['hotel','Hotel ou pousada','hotel'],['airbnb','Airbnb','house'],['camping','Camping','tent'],['gratis','Camping grátis','free']].map(([k,n,i])=>`<label><input type="radio" name="hosp" value="${k}" data-bind="hosp" ${st.hosp===k?'checked':''}><span>${ic(i,17)} ${n}</span></label>`).join('')}</div><label class="sw"><input type="checkbox" id="f-eq" data-bind="temEquip" ${st.temEquip?'checked':''}><span><b>Já tenho barraca e equipamento</b></span></label></div>
+ <div class="card"><h3>Teto do orçamento</h3><label class="f">Total para o grupo (R$)<input type="number" step="100" id="f-teto" data-bind="teto" value="${st.teto}" inputmode="numeric"></label></div>
+ ${IS_PWA?`<div class="card"><h3>Backup dos seus dados</h3><p class="small muted">Tudo fica salvo só neste celular. Baixe um backup antes de trocar de aparelho.</p><div class="row"><button class="btn" data-act="backup">Baixar backup</button><label class="btn" for="restaurar">Restaurar backup</label><input type="file" id="restaurar" accept="application/json,.json" hidden></div></div>`:''}
+ <button class="btn ghost sm" data-act="reset" style="align-self:flex-start">Recomeçar do zero</button>`};
+
+/* ---------- pacote em folha ---------- */
+function abrirFolha(html){fecharFolha();const bg=document.createElement('div');bg.className='sheet-bg';bg.dataset.act='fechar';const sh=document.createElement('div');sh.className='sheet';sh.setAttribute('role','dialog');sh.setAttribute('aria-modal','true');sh.innerHTML=`<div class="grab"></div><div class="in">${html}</div>`;document.body.append(bg,sh);document.body.style.overflow='hidden';sh.querySelector('button')?.focus()}
+function fecharFolha(){document.querySelectorAll('.sheet,.sheet-bg').forEach(e=>e.remove());if(!document.querySelector('.overlay'))document.body.style.overflow=''}
+function verPacote(id){const p=PACOTES.find(x=>x.id===id);const C=pkgCalc(p);const D=DEST[p.dest];const ps=pkgState(p);
+ const at=Object.keys(ps.ativ).map(k=>D.ativ.find(a=>a.id===k)).filter(Boolean);
+ abrirFolha(`<div class="res-hero">${scene(p.dest)}<div class="tag"><span class="chip sun">${NICK[p.tier]}</span><button class="xbtn" data-act="fechar" aria-label="Fechar">${ic('x',18)}</button></div></div>
+ <div><span class="kicker">${esc(D.nome)} · ${TIPOS[p.tipo]}</span><h2>${esc(p.nome)}</h2><p class="muted">${esc(p.sub)}</p></div>
+ <div class="row"><span class="chip sea">${ic(HICON[p.hosp==='comparar'?'airbnb':p.hosp],15)} ${HOSPN[C.ht][C.ti]}</span><span class="chip sea">${ic(TICONT[p.transporte],15)} ${TRN[p.transporte]}</span><span class="chip sea">${ic('cal',15)} ${noites()} noites</span></div>
+ <div class="card soft"><b>O que já está no pacote</b><ul class="cl small">${at.map(a=>`<li>${esc(a.n)}</li>`).join('')}<li>Roteiro dia a dia, listas de mala e cofre configurados</li></ul></div>
+ <div class="row between"><div><div class="disp num" style="font-size:2rem">${brl(C.total/P())}</div><span class="small muted">por pessoa · total ${brl(C.total)} para ${P()}</span></div><span class="chip ${C.total<=st.teto?'mint':'coral'}">${C.total<=st.teto?'Cabe no bolso':'Passa do teto'}</span></div>
+ <button class="btn cta block" data-act="usarpkg" data-v="${p.id}">${ic('check',18)} Quero esse pacote</button>`)}
+function usarPacote(p){Object.assign(st,pkgState(p));st.noites={};st.pacote=p.nome;st.quiz=true;st.exemplo=false;diaSel=null;save();fecharFolha();confete();toast(`${p.nome} é seu!`);go('plano');subPlano='orc';render()}
+
+/* ---------- quiz ---------- */
+let qz=null;
+const QG={solo:'Só eu e minha playlist',casal:'Eu e o mozão',amigos:'A galera toda',familia:'A família inteira'};
+function abrirQuiz(){const n=P();const k=kids();qz={i:0,a:{grupo:n===1?'solo':k?'familia':n===2?'casal':'amigos',n:Math.max(n,3),inicio:st.inicio,fim:st.fim,tipo:st.tipo,jet:st.querJet?'guiado':'nao',hosp:st.hosp,transporte:st.transporte,destino:st.destino,teto:st.teto}};
+ let o=document.querySelector('.overlay');if(!o){o=document.createElement('div');o.className='overlay quiz';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-label','Quiz da viagem');document.body.appendChild(o)}document.body.style.overflow='hidden';rQuiz()}
+function fecharQuiz(){document.querySelector('.overlay')?.remove();document.body.style.overflow='';qz=null}
+const QN=9;
+function opt(k,v,title,sub,icn,tone,sel){return`<button class="qo" data-qa="${k}" data-v="${v}" aria-pressed="${sel}"><span class="qi" style="${TONE[tone]}">${ic(icn,28)}</span><span><b>${title}</b><span>${sub}</span></span></button>`}
+function qState(a){const pess=a.grupo==='solo'?[{nome:'Você',idade:30}]:a.grupo==='casal'?[{nome:'Você',idade:30},{nome:'Mozão',idade:30}]:a.grupo==='familia'?Array.from({length:a.n},(_,i)=>i<2?{nome:i?'Pessoa 2':'Você',idade:38}:{nome:'Criança '+(i-1),idade:[9,6,4,3][i-2]||5}):Array.from({length:a.n},(_,i)=>({nome:i?'Amigo '+(i+1):'Você',idade:28}));
+ const base={pessoas:pess,inicio:a.inicio,fim:a.fim,tipo:a.tipo,querJet:a.jet!=='nao',hosp:a.hosp,transporte:a.transporte,teto:a.teto};
+ let dest=a.destino;
+ if(dest==='surpresa'){const cand=ORDEM.map(d=>comOverride({...base,destino:d,ativ:defAtiv(d,a.tipo,a.jet!=='nao')},()=>{const t=melhorNivel(d);const tot=calc(d,t).total;return{d,fits:tot<=a.teto,tot,sc:tierIdx(t)*10+(a.jet!=='nao'&&DEST[d].ativ.some(x=>x.id==='jet30')?4:0)+DEST[d].ativ.filter(x=>x.tags.includes(a.tipo)).length+(d==='floripa'?2:0)}}));const ok=cand.filter(c=>c.fits);dest=ok.length?ok.sort((x,y)=>y.sc-x.sc)[0].d:cand.sort((x,y)=>x.tot-y.tot)[0].d}
+ const ativ=defAtiv(dest,a.tipo,a.jet!=='nao');
+ const tier=comOverride({...base,destino:dest,ativ},()=>melhorNivel(dest));
+ return{...base,destino:dest,ativ,tier,pacote:`${SHORT[dest]} ${APEL[a.tipo]}`}}
+function bolsoNome(v){return v<3000?'Modo miojo':v<7000?'Modo pastel de feira':v<15000?'Modo camarão no espeto':'Modo lagosta'}
+function rQuiz(){const o=document.querySelector('.overlay');if(!o||!qz)return;const a=qz.a,i=qz.i;let h='';
+ const head=(t,s)=>`<span class="q-step">Pergunta ${i+1} de 8</span><h1>${t}</h1>${s?`<p class="muted">${s}</p>`:''}`;
+ if(i===0)h=head('Quem vai nessa aventura?','Pode contar a tia do pavê. A gente não julga.')+`<div class="q-opts">${opt('grupo','solo','Só eu e minha playlist','Viagem solo, do meu jeito','user','sun',a.grupo==='solo')}${opt('grupo','casal','Eu e o mozão','Viagem a dois','heart','coral',a.grupo==='casal')}${opt('grupo','amigos','A galera toda','Quanto mais gente, mais barato fica','party','sea',a.grupo==='amigos')}${opt('grupo','familia','A família inteira','Com criança e tudo','family','mint',a.grupo==='familia')}</div>${a.grupo==='amigos'||a.grupo==='familia'?`<div class="card"><div class="row between"><b>Quantas pessoas no total?</b><div class="stepper"><button data-qn="-1" aria-label="Menos">${ic('minus',16)}</button><span class="num">${a.n}</span><button data-qn="1" aria-label="Mais">${ic('plus',16)}</button></div></div>${a.grupo==='familia'?'<span class="small muted">Conto 2 adultos e o resto como crianças. Dá para ajustar depois.</span>':''}</div><button class="btn cta" data-qnext>Continuar ${ic('arrow',18)}</button>`:''}`;
+ else if(i===1){const n=diff(pd(a.inicio),pd(a.fim));h=head('Quando a areia encosta no seu pé?','Já deixei suas férias marcadas. Mude se quiser.')+`<div class="opts">${[['Minhas férias (4 a 18 jan)','2027-01-04','2027-01-18'],['Uma semana',a.inicio,null,7],['Fim de semana prolongado',a.inicio,null,3]].map(([n2,ini,fim,d],k)=>`<label><input type="radio" name="qd" data-qdate="${ini}|${fim||iso(addD(pd(ini),d))}" ${a.inicio===ini&&a.fim===(fim||iso(addD(pd(ini),d)))?'checked':''}><span>${n2}</span></label>`).join('')}</div>
+  <div class="grid" style="grid-template-columns:1fr 1fr"><label class="f">Ida<input type="date" id="q-ini" value="${a.inicio}"></label><label class="f">Volta<input type="date" id="q-fim" value="${a.fim}"></label></div><div class="card soft"><b class="disp" style="font-size:1.5rem">${n} noites de praia</b><span class="small muted">${n>=10?'Isso que é férias de verdade.':n>=5?'Dá pra fazer muita coisa.':'Curtinho e intenso.'}</span></div><button class="btn cta" data-qnext>Continuar ${ic('arrow',18)}</button>`}
+ else if(i===2)h=head('Qual é o seu espírito nas férias?','Escolha o bicho que mora em você.')+`<div class="q-opts">${opt('tipo','aventura','Golfinho elétrico','Trilha, jet ski e adrenalina','jet','coral',a.tipo==='aventura')}${opt('tipo','relax','Preguiça na rede','Sombra, água de coco e zero despertador','hammock','sun',a.tipo==='relax')}${opt('tipo','romantica','Casal de pinguins','Pôr do sol, jantar e mãos dadas','heart','coral',a.tipo==='romantica')}${opt('tipo','amigos','Papagaio da festa','Galera, música e história pra contar','party','sea',a.tipo==='amigos')}${opt('tipo','familia','Pata com patinhos','Mar calminho e sorvete pra todo mundo','family','mint',a.tipo==='familia')}</div>`;
+ else if(i===3)h=head('Jet ski: sim ou com certeza?','Sem habilitação? Tranquilo, tem passeio com marinheiro.')+`<div class="q-opts">${opt('jet','sim','Com certeza, eu piloto','Tenho habilitação de motonauta','jet','coral',a.jet==='sim')}${opt('jet','guiado','Sim, mas alguém pilota pra mim','Vou de garupa com o marinheiro','wave','sea',a.jet==='guiado')}${opt('jet','nao','Prefiro ver da areia','Com um picolé na mão','ice','sun',a.jet==='nao')}</div>`;
+ else if(i===4)h=head('Onde você quer acordar?','Do raiz ao luxo, tudo vale.')+`<div class="q-opts">${opt('hosp','camping','Barraca com som de onda','Camping com banho quente e cozinha','tent','mint',a.hosp==='camping')}${opt('hosp','gratis','Barraca de graça, sou raiz','Voluntariado ou ponto gratuito','free','sun',a.hosp==='gratis')}${opt('hosp','airbnb','Apê com cozinha','Pra fazer meu miojo gourmet','house','sea',a.hosp==='airbnb')}${opt('hosp','hotel','Hotel com café da manhã','E sem lavar a louça','hotel','coral',a.hosp==='hotel')}${opt('hosp','comparar','Tanto faz, me surpreenda','Eu comparo tudo pra você','spark','grape',a.hosp==='comparar')}</div>`;
+ else if(i===5)h=head('Como a gente chega lá?',`Saindo de ${esc(st.origem)}.`)+`<div class="q-opts">${opt('transporte','carro','Meu carro, minha playlist','Liberdade pra parar onde quiser','car','coral',a.transporte==='carro')}${opt('transporte','carona','Carona e amigos novos','BlaBlaCar, barato na estrada','ride','mint',a.transporte==='carona')}${opt('transporte','onibus','Ônibus e cochilo na janela','Sem dirigir e sem pedágio','bus','sea',a.transporte==='onibus')}</div>`;
+ else if(i===6)h=head('Pra onde o coração aponta?','Ilha, litoral paulista ou ficar por perto.')+`<div class="q-opts">${[['floripa','Florianópolis','Jet ski, trilhas e 40 praias'],['litsul','Ilha Comprida e Cananéia','Sossego, golfinhos e preço baixo'],['litnorte','Ubatuba e Ilhabela','Mata, ilhas e escunas'],['regiao','Curitiba e Ilha do Mel','Dorme em casa e economiza']].map(([d,t,s])=>`<button class="qo pic" data-qa="destino" data-v="${d}" aria-pressed="${a.destino===d}"><div class="thumb">${scene(d)}</div><span class="in"><b>${t}</b><span>${s}</span></span></button>`).join('')}${opt('destino','surpresa','Me surpreenda','Eu escolho o que mais combina com você','spark','grape',a.destino==='surpresa')}</div>`;
+ else if(i===7)h=head('Quanto o bolso aguenta sem chorar?','Valor total da viagem, para o grupo todo.')+`<div class="card" style="align-items:center;text-align:center"><span class="chip sun">${bolsoNome(a.teto)}</span><div class="money num">${brl(a.teto)}</div><span class="small muted">${brl(a.teto/(a.grupo==='solo'?1:a.grupo==='casal'?2:a.n))} por pessoa</span><input class="slider" type="range" id="q-teto" min="1000" max="40000" step="500" value="${a.teto}" aria-label="Orçamento total"><div class="row between small muted" style="width:100%"><span>Miojo</span><span>Pastel</span><span>Camarão</span><span>Lagosta</span></div></div><button class="btn cta" data-qnext>Ver meu pacote ${ic('spark',18)}</button>`;
+ else{const s=qState(a);const C=comOverride(s,()=>calc(s.destino,s.tier));const D=DEST[s.destino];const at=Object.keys(s.ativ).map(k=>D.ativ.find(x=>x.id===k)).filter(Boolean).slice(0,4);const pp=C.total/s.pessoas.length;const cabe=C.total<=s.teto;
+  h=`<span class="q-step">Prontinho!</span><h1>Seu pacote: ${esc(s.pacote)}</h1>
+  <div class="res-hero">${scene(s.destino)}<div class="tag"><span class="chip sun">${NICK[s.tier]}</span><span class="count"><b class="num">${brl(pp)}</b> por pessoa</span></div></div>
+  <div class="card"><div class="lines">
+   <div class="line"><span>Destino</span><b>${esc(D.nome)}</b></div>
+   <div class="line"><span>Quando</span><b>${fdl(pd(s.inicio))} a ${fdl(pd(s.fim))}</b></div>
+   <div class="line"><span>Quem vai</span><b>${QG[a.grupo]}${s.pessoas.length>2?` (${s.pessoas.length})`:''}</b></div>
+   <div class="line"><span>Dormir</span><b>${HOSPN[C.ht][C.ti]}</b></div>
+   <div class="line"><span>Chegar</span><b>${TRN[s.transporte]}</b></div>
+   <div class="line"><span>Destaques</span><b style="text-align:right">${at.map(x=>esc(x.n)).join(', ')||'Praia e descanso'}</b></div>
+   <div class="line"><span>Total</span><b class="num">${brl(C.total)}</b></div></div>
+   <span class="chip wrap ${cabe?'mint':'coral'}" style="align-self:flex-start">${cabe?`Cabe no bolso e ainda sobram ${brl(s.teto-C.total)}`:`Passa ${brl(C.total-s.teto)} do bolso. No Cofre eu mostro como economizar`}</span></div>
+  <button class="btn cta block" data-qfinal>${ic('check',18)} Fechar esse pacote</button><button class="linkbtn" data-qrestart>Refazer o quiz</button>`}
+ const pct=Math.min(100,i/8*100);
+ o.innerHTML=`<div class="q-top"><button class="xbtn" data-qclose aria-label="Fechar o quiz">${ic('x',18)}</button><div class="track"><i style="width:${pct}%"></i><span class="boat" style="left:max(0px,calc(${pct}% - 24px))">${ic('boat',24)}</span></div>${i>0&&i<8?`<button class="xbtn" data-qback aria-label="Voltar">${ic('arrow',18).replace('M5 12h14M13 6l6 6-6 6','M19 12H5M11 6l-6 6 6 6')}</button>`:''}</div>
+ <div class="q-body q-anim">${h}${i<8?`<div class="q-foot"><button class="linkbtn" data-qpronto>Prefiro um pacote pronto</button></div>`:''}</div>`;
+ o.scrollTop=0;if(i===8)confete()}
+
+/* ---------- confete ---------- */
+function confete(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const c=$('#confete');c.hidden=false;const W=c.width=innerWidth*devicePixelRatio,H=c.height=innerHeight*devicePixelRatio;c.style.width=innerWidth+'px';c.style.height=innerHeight+'px';const x=c.getContext('2d');const cs=['#FF6450','#FFBE2E','#00A3B5','#21B07A','#7C5CFF','#FF8A3D'];
+ const ps=Array.from({length:140},()=>({x:W/2+(Math.random()-.5)*W*.3,y:H*.35,vx:(Math.random()-.5)*22*devicePixelRatio,vy:(-Math.random()*20-6)*devicePixelRatio,r:Math.random()*Math.PI,vr:(Math.random()-.5)*.3,w:(6+Math.random()*7)*devicePixelRatio,h:(4+Math.random()*5)*devicePixelRatio,c:cs[Math.floor(Math.random()*cs.length)]}));
+ const t0=performance.now();(function f(t){x.clearRect(0,0,W,H);for(const p of ps){p.vy+=.6*devicePixelRatio;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h);x.restore()}if(t-t0<2600)requestAnimationFrame(f);else{x.clearRect(0,0,W,H);c.hidden=true}})(t0)}
+let tt;function toast(m){clearTimeout(tt);document.querySelector('.toast')?.remove();const el=document.createElement('div');el.className='toast';el.setAttribute('role','status');el.textContent=m;document.body.appendChild(el);tt=setTimeout(()=>el.remove(),2200)}
+function upd(msg){st.exemplo=false;save();const y=scrollY;render();scrollTo(0,y);if(msg)toast(msg)}
+
+/* ---------- eventos ---------- */
+document.addEventListener('click',e=>{
+ const t=e.target;
+ if(qz){const q=t.closest('[data-qa],[data-qnext],[data-qclose],[data-qback],[data-qpronto],[data-qfinal],[data-qrestart],[data-qn]');if(q){
+  if(q.dataset.qclose!=null){fecharQuiz();return}
+  if(q.dataset.qback!=null){qz.i=Math.max(0,qz.i-1);rQuiz();return}
+  if(q.dataset.qpronto!=null){fecharQuiz();go('explorar');setTimeout(()=>document.getElementById('pacotes')?.scrollIntoView({behavior:'smooth'}),60);return}
+  if(q.dataset.qrestart!=null){qz.i=0;rQuiz();return}
+  if(q.dataset.qn){qz.a.n=Math.max(3,Math.min(12,qz.a.n+ +q.dataset.qn));rQuiz();return}
+  if(q.dataset.qnext!=null){qz.i++;rQuiz();return}
+  if(q.dataset.qfinal!=null){const s=qState(qz.a);Object.assign(st,s);st.noites={};st.quiz=true;st.exemplo=false;diaSel=null;save();fecharQuiz();confete();toast(`${s.pacote}: pacote fechado!`);subPlano='orc';go('plano');return}
+  if(q.dataset.qa){const k=q.dataset.qa;qz.a[k]=q.dataset.v;if(k==='grupo'&&(q.dataset.v==='amigos'||q.dataset.v==='familia')){rQuiz();return}
+   q.closest('.q-opts').querySelectorAll('.qo').forEach(b=>b.setAttribute('aria-pressed',b===q));setTimeout(()=>{if(qz){qz.i++;rQuiz()}},260);return}}
+  return}
+ const g=t.closest('[data-go]');if(g){e.preventDefault();go(g.dataset.go);return}
+ const fv=t.closest('[data-fav]');if(fv){e.stopPropagation();const id=fv.dataset.fav;if(st.fav[id])delete st.fav[id];else st.fav[id]=1;save();fv.setAttribute('aria-pressed',!!st.fav[id]);if(st.fav[id])toast('Salvo nos favoritos');return}
+ const pk=t.closest('[data-pkg]');if(pk){verPacote(pk.dataset.pkg);return}
+ const ct=t.closest('[data-cat]');if(ct){catSel=ct.dataset.cat;const y=scrollY;render();scrollTo(0,y);return}
+ const nt=t.closest('[data-nt]');if(nt){const[d,k]=nt.dataset.nt.split('|');const o=st.noites[d]||{};st.noites[d]={t:k,n:o.n||'',v:o.t===k?o.v:''};upd(HOSPT[k]+' na noite de '+d.slice(8)+'/'+d.slice(5,7));return}
+ const na=t.closest('[data-nall]');if(na){const k=na.dataset.nall;if(k==='padrao')st.noites={};else noitesLista().forEach(d=>{const o=st.noites[d]||{};st.noites[d]={t:k,n:o.t===k?o.n||'':'',v:o.t===k?o.v:''}});upd(k==='padrao'?'Voltei ao padrão do plano':'Todas as noites: '+HOSPT[k]);return}
+ const nr=t.closest('[data-nreset]');if(nr){delete st.noites[nr.dataset.nreset];upd();return}
+ const sb=t.closest('[data-sub]');if(sb){subPlano=sb.dataset.sub;render();return}
+ const ms=t.closest('[data-msub]');if(ms){subMala=ms.dataset.msub;render();return}
+ const dy=t.closest('[data-day]');if(dy){diaSel=+dy.dataset.day;const y=scrollY;render();scrollTo(0,y);return}
+ const b=t.closest('[data-act]');if(!b)return;const a=b.dataset.act;
+ if(a==='tema'){st.tema={auto:'claro',claro:'escuro',escuro:'auto'}[st.tema];save();aplicarTema();toast(TEMAS[st.tema][1])}
+ else if(a==='quiz')abrirQuiz();
+ else if(a==='fechar')fecharFolha();
+ else if(a==='usarpkg')usarPacote(PACOTES.find(p=>p.id===b.dataset.v));
+ else if(a==='tier'){st.tier=b.dataset.v;upd(NICK[st.tier]+': esse é o seu plano')}
+ else if(a==='dest'){st.noites={};st.destino=b.dataset.v;st.ativ=defAtiv(st.destino,st.tipo,st.querJet);st.pacote='';diaSel=null;upd('Partiu '+SHORT[st.destino]+'!')}
+ else if(a==='addp'){st.pessoas.push({nome:'Pessoa '+(st.pessoas.length+1),idade:30});upd()}
+ else if(a==='delp'){st.pessoas.splice(+b.dataset.i,1);upd()}
+ else if(a==='aq'){const id=b.dataset.id;st.ativ[id]=Math.max(0,Math.min(9,(st.ativ[id]||0)+ +b.dataset.d));if(!st.ativ[id])delete st.ativ[id];upd()}
+ else if(a==='sugerir'){st.ativ=defAtiv(st.destino,st.tipo,st.querJet);upd('Passeios sugeridos')}
+ else if(a==='regerar'){const c=st.rt?st.rt.days.flatMap(d=>d.items.filter(x=>x.custom).map(x=>({...x,date:d.date}))):[];st.rt=null;const R=rt();c.forEach(x=>{const d=R.days.find(d=>d.date===x.date);if(d){const{date,...y}=x;d.items.push(y);d.items.sort((p,q)=>p.h.localeCompare(q.h))}});upd('Roteiro refeito')}
+ else if(a==='delit'){const[di,i]=b.dataset.v.split(':').map(Number);st.rt.days[di].items.splice(i,1);upd()}
+ else if(a==='deldep'){st.depositos.splice(+b.dataset.i,1);upd()}
+ else if(a==='delg'){st.gastos.splice(+b.dataset.i,1);upd()}
+ else if(a==='limparlistas'){for(const k of Object.keys(st.checks))if(!k.startsWith('pre'))delete st.checks[k];upd()}
+ else if(a==='backup'){const blob=new Blob([JSON.stringify(st,null,1)],{type:'application/json'});const l=document.createElement('a');l.href=URL.createObjectURL(blob);l.download=`rumo-backup-${iso(new Date())}.json`;document.body.appendChild(l);l.click();setTimeout(()=>{URL.revokeObjectURL(l.href);l.remove()},500);toast('Backup baixado')}
+ else if(a==='reset'){if(b.dataset.c){st=Object.assign(def(),{quiz:false,fav:{},pacote:''});st.exemplo=false;diaSel=null;save();render();toast('Tudo zerado')}else{b.dataset.c='1';b.textContent='Toque de novo para confirmar';setTimeout(()=>{if(b.isConnected){delete b.dataset.c;b.textContent='Recomeçar do zero'}},4000)}}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(document.querySelector('.sheet'))fecharFolha();else if(qz)fecharQuiz()}const pk=e.target.closest&&e.target.closest('[data-pkg]');if(pk&&(e.key==='Enter'||e.key===' ')&&e.target===pk){e.preventDefault();verPacote(pk.dataset.pkg)}});
+document.addEventListener('input',e=>{if(e.target.id==='q-teto'&&qz){qz.a.teto=+e.target.value;const card=e.target.closest('.card');card.querySelector('.money').textContent=brl(qz.a.teto);card.querySelector('.chip').textContent=bolsoNome(qz.a.teto);const n=qz.a.grupo==='solo'?1:qz.a.grupo==='casal'?2:qz.a.n;card.querySelector('.small').textContent=brl(qz.a.teto/n)+' por pessoa'}});
+document.addEventListener('change',e=>{const el=e.target;
+ if(qz){if(el.dataset.qdate){const[a,b]=el.dataset.qdate.split('|');qz.a.inicio=a;qz.a.fim=b;rQuiz()}else if(el.id==='q-ini'||el.id==='q-fim'){if(!el.value)return;qz.a[el.id==='q-ini'?'inicio':'fim']=el.value;if(pd(qz.a.fim)<=pd(qz.a.inicio))qz.a.fim=iso(addD(pd(qz.a.inicio),1));rQuiz()}return}
+ if(el.id==='restaurar'){const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d||!Array.isArray(d.pessoas)||!d.destino)throw 0;st=Object.assign(def(),{quiz:true,fav:{},pacote:''},d);save();render();toast('Backup restaurado')}catch(x){toast('Esse arquivo não é um backup do Rumo')}};r.readAsText(f);return}
+ if(el.dataset.nv||el.dataset.nn){const d=el.dataset.nv||el.dataset.nn;const i=noitesLista().indexOf(d);const cur=noiteInfo(st.destino,st.tier,i,d);const o=st.noites[d]||{t:cur.t,n:'',v:''};if(el.dataset.nv)o.v=el.value===''?'':Math.max(0,parseFloat(el.value)||0);else o.n=el.value.trim();st.noites[d]=o;upd(el.dataset.nv&&el.value!==''?'Valor salvo':'');return}
+ if(el.dataset.bind){const k=el.dataset.bind;let v=el.type==='checkbox'?el.checked:el.value;if(el.type==='number')v=Math.max(0,parseFloat(v)||0);
+  if(k==='inicio'||k==='fim'){if(!v)return;st[k]=v;if(pd(st.fim)<=pd(st.inicio))st.fim=iso(addD(pd(st.inicio),1));diaSel=null}else st[k]=v;
+  if(k==='tipo'||k==='querJet')st.ativ=defAtiv(st.destino,st.tipo,st.querJet);if(k==='kml'&&!v)st.kml=1;upd();return}
+ if(el.dataset.p!=null){const p=st.pessoas[+el.dataset.p];if(el.dataset.pf==='idade')p.idade=Math.max(0,parseInt(el.value)||0);else p.nome=el.value.trim()||'Sem nome';upd();return}
+ if(el.dataset.check){if(el.checked)st.checks[el.dataset.check]=1;else delete st.checks[el.dataset.check];upd();return}
+ if(el.dataset.econ){if(el.checked)st.econ[el.dataset.econ]=1;else delete st.econ[el.dataset.econ];upd(el.checked?'Economia ligada':'');return}
+ if(el.dataset.rt){const[di,i]=el.dataset.rt.split(':').map(Number);const R=rt();R.days[di].items[i].done=el.checked;upd(el.checked?'Feito!':'');return}
+});
+document.addEventListener('submit',e=>{const f=e.target.closest('[data-form]');if(!f)return;e.preventDefault();const t=f.dataset.form;const now=new Date();const dt=`${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}`;
+ if(t==='dep'){const v=parseFloat($('#dep-v').value);if(!(v>0))return;const antes=st.depositos.reduce((s,d)=>s+d.v,0);st.depositos.push({v,n:$('#dep-n').value.trim(),dt});upd(brl(v)+' no cofre!');if(antes<plano().meta&&antes+v>=plano().meta)confete()}
+ if(t==='gasto'){const v=parseFloat($('#g-v').value);if(!(v>0))return;st.gastos.push({v,c:$('#g-c').value,d:$('#g-d').value.trim(),dt});upd('Gasto lançado')}
+ if(t==='item'){const tx=$('#it-t').value.trim();if(!tx)return;const h=(($('#it-h').value||'12:00').match(/\d{1,2}:\d{2}/)||['12:00'])[0].padStart(5,'0');const R=rt();const d=R.days.find(x=>x.date===$('#it-d').value);if(!d)return;d.items.push({h,t:tx,tag:'custom',done:false,custom:true});d.items.sort((a,b)=>a.h.localeCompare(b.h));upd('Adicionado ao roteiro')}
+});
+/* instalação e rede */
+let pedidoInstalar=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();pedidoInstalar=e;$('#instalar').hidden=false});
+$('#instalar').addEventListener('click',async()=>{if(!pedidoInstalar)return;pedidoInstalar.prompt();await pedidoInstalar.userChoice.catch(()=>{});pedidoInstalar=null;$('#instalar').hidden=true});
+window.addEventListener('appinstalled',()=>{$('#instalar').hidden=true;toast('Rumo instalado!')});
+function rede(){$('#offline').hidden=navigator.onLine}
+addEventListener('online',rede);addEventListener('offline',rede);rede();
+if(IS_PWA&&'serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+render();
+if(!st.quiz&&st.exemplo)setTimeout(()=>{if(!qz&&rota==='explorar')abrirQuiz()},700);
+</script>
+</body>
+</html>
